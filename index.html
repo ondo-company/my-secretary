@@ -359,16 +359,20 @@ async function gFetch(url){
 // ============================================================
 //  GEMINI API
 // ============================================================
-async function askGemini(prompt) {
+async function askGemini(prompt, signal) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
   const res = await fetch(url, {
-    method:'POST',
+    method:'POST', signal,
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       contents:[{parts:[{text:prompt}]}],
       generationConfig:{temperature:0.3, maxOutputTokens:2048}
     })
   });
+  if(!res.ok){
+    const err=await res.text().catch(()=>'');
+    throw new Error('Gemini API HTTP '+res.status+': '+err.slice(0,100));
+  }
   const data = await res.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
@@ -389,31 +393,15 @@ async function showDash(){
     return;
   }
 
-  // DEBUG: show token info on screen
-  const dbg=document.getElementById('errorMsg');
-  dbg.style.display='block';
-  dbg.textContent='DEBUG: token='+(accessToken?accessToken.slice(0,15)+'... (len='+accessToken.length+')':'NULL');
-
-  // User info - try direct fetch with explicit header
+  // User info
   try{
-    const resp=await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{
-      method:'GET',
-      headers:{'Authorization':'Bearer '+accessToken,'Accept':'application/json'}
-    });
-    const body=await resp.text();
-    dbg.textContent+=' | status='+resp.status+' | body='+body.slice(0,120);
-
-    if(!resp.ok){
-      throw new Error('HTTP '+resp.status+': '+body.slice(0,200));
-    }
-    const u=JSON.parse(body);
+    const u=await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
     document.getElementById('userAvatar').src=u.picture||'';
     document.getElementById('userName').textContent=u.name||u.email||'';
     setGreeting((u.name||u.email||'').split(' ')[0].split('@')[0]);
-    dbg.style.display='none'; // hide debug on success
   }catch(e){
     console.error('Userinfo failed:', e);
-    showError('DEBUG token='+String(accessToken).slice(0,20)+'...\nエラー: '+e.message);
+    showError('データ取得に失敗しました。再度ログインしてください。');
     accessToken=null;
     localStorage.removeItem('my_secretary_token');
     document.getElementById('loginView').style.display='flex';
@@ -569,13 +557,15 @@ async function loadUnread(){
 //  AI ANALYSIS (Gemini)
 // ============================================================
 async function runAIAnalysis(){
-  if(GEMINI_API_KEY==='YOUR_GEMINI_API_KEY'){
-    // No API key - use rule-based fallback
+  if(!GEMINI_API_KEY||GEMINI_API_KEY==='YOUR_GEMINI_API_KEY'){
     runRuleBasedAnalysis();
     return;
   }
 
   try {
+    // Timeout after 15 seconds
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000);
     // Build context for Gemini
     const evSummary = calEvents.map(ev=>{
       const d=new Date(ev.start.dateTime||ev.start.date);
@@ -639,8 +629,14 @@ ${starSummary||'なし'}
 ## 未読メール（スターなし・直近3日）：
 ${unreadSummary||'なし'}`;
 
-    const result = await askGemini(prompt);
-    parseAndRender(result);
+    const result = await askGemini(prompt, controller.signal);
+    clearTimeout(timeout);
+    if(result && result.includes('---BRIEFING---')){
+      parseAndRender(result);
+    } else {
+      console.warn('Gemini returned unexpected format, falling back');
+      runRuleBasedAnalysis();
+    }
   } catch(e) {
     console.error('Gemini error:', e);
     runRuleBasedAnalysis();
