@@ -234,11 +234,6 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/drive.readonly'
 ].join(' ');
-const DISCOVERY_DOCS = [
-  'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
-  'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest',
-  'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
-];
 
 // ============================================================
 //  CONSTANTS
@@ -281,16 +276,11 @@ function setGreeting(name) {
 }
 
 // ============================================================
-//  GOOGLE AUTH
+//  GOOGLE AUTH (fetch-based, no gapi.client dependency)
 // ============================================================
-let tokenClient, gapiInited=false, gisInited=false;
+let tokenClient, gisInited=false;
+let accessToken=null; // raw access token string
 
-function gapiLoaded(){
-  gapi.load('client', async()=>{
-    await gapi.client.init({discoveryDocs:DISCOVERY_DOCS});
-    gapiInited=true; maybeRestore();
-  });
-}
 function gisLoaded(){
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID, scope:SCOPES, callback:onToken,
@@ -299,46 +289,68 @@ function gisLoaded(){
       showError('ログインエラー: '+(err.type||err.message||JSON.stringify(err)));
     },
   });
-  gisInited=true; maybeRestore();
+  gisInited=true;
+  maybeRestore();
 }
 function maybeRestore(){
-  if(!gapiInited||!gisInited) return;
-  const s=localStorage.getItem('gapi_token');
-  if(s){ try{ gapi.client.setToken(JSON.parse(s)); showDash(); }catch(e){} }
+  if(!gisInited) return;
+  const s=localStorage.getItem('my_secretary_token');
+  if(s){
+    try{
+      const t=JSON.parse(s);
+      if(Date.now()-(t._savedAt||0)<55*60*1000){
+        accessToken=t.access_token;
+        showDash();
+      } else {
+        // Token expired, try silent refresh
+        tokenClient.requestAccessToken({prompt:''});
+      }
+    }catch(e){ localStorage.removeItem('my_secretary_token'); }
+  }
 }
 function onToken(r){
-  console.log('onToken called:', r);
+  console.log('onToken called');
   if(r.error){
     console.error('Token error:', r);
     showError('認証エラー: '+r.error);
     return;
   }
-  // Explicitly set token on gapi client
-  gapi.client.setToken({access_token:r.access_token, token_type:r.token_type, expires_in:r.expires_in, scope:r.scope});
-  const t=gapi.client.getToken(); t._savedAt=Date.now();
-  localStorage.setItem('gapi_token',JSON.stringify(t));
+  accessToken=r.access_token;
+  const saved={access_token:r.access_token, _savedAt:Date.now()};
+  localStorage.setItem('my_secretary_token',JSON.stringify(saved));
   console.log('Token saved, calling showDash');
   showDash();
 }
-async function refreshToken(){
-  const s=localStorage.getItem('gapi_token');
+async function refreshTokenIfNeeded(){
+  const s=localStorage.getItem('my_secretary_token');
   if(!s) return;
   try{
     const t=JSON.parse(s);
-    if(Date.now()-(t._savedAt||0)>50*60*1000) tokenClient.requestAccessToken({prompt:''});
+    if(Date.now()-(t._savedAt||0)>50*60*1000){
+      tokenClient.requestAccessToken({prompt:''});
+    }
   }catch(e){}
 }
 function handleLogin(){
-  if(!gapiInited||!gisInited){alert('読み込み中です...');return;}
-  console.log('handleLogin: requesting token...');
+  if(!gisInited){alert('読み込み中です...');return;}
   tokenClient.requestAccessToken({prompt:'consent'});
 }
 function handleLogout(){
-  const t=gapi.client.getToken();
-  if(t) google.accounts.oauth2.revoke(t.access_token);
-  gapi.client.setToken(null); localStorage.removeItem('gapi_token');
+  if(accessToken) google.accounts.oauth2.revoke(accessToken);
+  accessToken=null;
+  localStorage.removeItem('my_secretary_token');
   document.getElementById('loginView').style.display='flex';
   document.getElementById('dashView').style.display='none';
+}
+
+// Helper: fetch Google API with auth header
+async function gFetch(url){
+  const r=await fetch(url,{headers:{'Authorization':'Bearer '+accessToken}});
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    throw new Error(e.error?.message||('HTTP '+r.status));
+  }
+  return r.json();
 }
 
 // ============================================================
@@ -366,30 +378,34 @@ let calEvents=[], starredThreads=[], unreadThreads=[];
 async function showDash(){
   document.getElementById('loginView').style.display='none';
   document.getElementById('dashView').style.display='block';
-  await refreshToken();
+
+  if(!accessToken){
+    showError('トークンがありません。再度ログインしてください。');
+    document.getElementById('loginView').style.display='flex';
+    document.getElementById('dashView').style.display='none';
+    return;
+  }
 
   // User info
   try{
-    console.log('Fetching userinfo...');
-    const r=await gapi.client.request({path:'https://www.googleapis.com/oauth2/v2/userinfo'});
-    console.log('Userinfo OK:', r.result);
-    const u=r.result;
+    console.log('Fetching userinfo with fetch...');
+    const u=await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
+    console.log('Userinfo OK:', u.email);
     document.getElementById('userAvatar').src=u.picture||'';
     document.getElementById('userName').textContent=u.name||u.email||'';
     setGreeting((u.name||u.email||'').split(' ')[0].split('@')[0]);
   }catch(e){
     console.error('Userinfo failed:', e);
-    showError('データ取得に失敗しました: '+(e.result?.error?.message||e.message||'不明なエラー')+'\n再度ログインしてください。');
-    localStorage.removeItem('gapi_token');
+    showError('データ取得に失敗しました: '+(e.message||'不明なエラー')+'\n再度ログインしてください。');
+    accessToken=null;
+    localStorage.removeItem('my_secretary_token');
     document.getElementById('loginView').style.display='flex';
     document.getElementById('dashView').style.display='none';
     return;
   }
 
   // Load data in parallel
-  const [cal, starred, unread] = await Promise.allSettled([
-    loadCalendar(), loadStarred(), loadUnread()
-  ]);
+  await Promise.allSettled([loadCalendar(), loadStarred(), loadUnread()]);
 
   // Then run AI analysis
   runAIAnalysis();
@@ -401,11 +417,12 @@ async function showDash(){
 async function loadCalendar(){
   const s=new Date(now); s.setHours(0,0,0,0);
   const e=new Date(s); e.setDate(e.getDate()+7);
-  const r=await gapi.client.calendar.events.list({
+  const params=new URLSearchParams({
     calendarId:'primary', timeMin:s.toISOString(), timeMax:e.toISOString(),
     singleEvents:true, orderBy:'startTime', maxResults:50, timeZone:'Asia/Tokyo'
   });
-  calEvents = r.result.items||[];
+  const r=await gFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?'+params);
+  calEvents = r.items||[];
   document.getElementById('schedLoading').style.display='none';
   renderSchedule(calEvents);
 }
@@ -480,10 +497,9 @@ function toggleSched(el){
 //  STARRED EMAILS (User's TODO)
 // ============================================================
 async function loadStarred(){
-  const r=await gapi.client.gmail.users.threads.list({
-    userId:'me', q:'is:starred -in:trash', maxResults:10
-  });
-  const threads=r.result.threads||[];
+  const params=new URLSearchParams({q:'is:starred -in:trash', maxResults:10});
+  const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+params);
+  const threads=r.threads||[];
   document.getElementById('starLoading').style.display='none';
   document.getElementById('starBadge').textContent=threads.length;
 
@@ -493,17 +509,17 @@ async function loadStarred(){
   }
 
   const details=await Promise.all(threads.map(t=>
-    gapi.client.gmail.users.threads.get({userId:'me',id:t.id,format:'metadata',metadataHeaders:['Subject','From','Date']})
+    gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')
   ));
-  starredThreads=details.map(r=>r.result);
+  starredThreads=details;
 
   let html='';
-  details.forEach(r=>{
-    const msgs=r.result.messages||[];
+  details.forEach(t=>{
+    const msgs=t.messages||[];
     const last=msgs[msgs.length-1];
     const hd={}; (last.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
     const date=new Date(parseInt(last.internalDate));
-    const ts=H.sd(date,now)?H.ft(last.internalDate?date.toISOString():'')||'':H.fd(date);
+    const ts=H.sd(date,now)?H.ft(date.toISOString())||'':H.fd(date);
 
     html+=`<div class="email-item">
       <div class="email-star">⭐</div>
@@ -521,16 +537,15 @@ async function loadStarred(){
 //  UNREAD EMAILS (for AI analysis)
 // ============================================================
 async function loadUnread(){
-  const r=await gapi.client.gmail.users.threads.list({
-    userId:'me', q:'is:unread in:inbox newer_than:3d -is:starred', maxResults:15
-  });
-  const threads=r.result.threads||[];
+  const params=new URLSearchParams({q:'is:unread in:inbox newer_than:3d -is:starred', maxResults:15});
+  const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+params);
+  const threads=r.threads||[];
   if(!threads.length) return;
 
   const details=await Promise.all(threads.slice(0,10).map(t=>
-    gapi.client.gmail.users.threads.get({userId:'me',id:t.id,format:'metadata',metadataHeaders:['Subject','From','Date']})
+    gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')
   ));
-  unreadThreads=details.map(r=>r.result);
+  unreadThreads=details;
 }
 
 // ============================================================
@@ -748,7 +763,6 @@ function runRuleBasedAnalysis(){
   }
 }
 </script>
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
 <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
 </html>
