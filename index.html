@@ -313,6 +313,8 @@ function onToken(r){
     showError('認証エラー: '+r.error);
     return;
   }
+  // Explicitly set token on gapi client
+  gapi.client.setToken({access_token:r.access_token, token_type:r.token_type, expires_in:r.expires_in, scope:r.scope});
   const t=gapi.client.getToken(); t._savedAt=Date.now();
   localStorage.setItem('gapi_token',JSON.stringify(t));
   console.log('Token saved, calling showDash');
