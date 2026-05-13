@@ -173,6 +173,7 @@ body {
     Googleでログイン
   </button>
   <p style="margin-top:24px;font-size:11px;color:#bbb;">Calendar・Gmail・Driveの読み取り権限が必要です</p>
+  <div id="errorMsg" style="display:none;margin-top:16px;padding:12px 16px;background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;font-size:12px;color:#e65100;max-width:320px;text-align:left;white-space:pre-wrap;"></div>
 </div>
 
 <!-- DASHBOARD -->
@@ -242,6 +243,11 @@ const DISCOVERY_DOCS = [
 // ============================================================
 //  CONSTANTS
 // ============================================================
+function showError(msg){
+  const el=document.getElementById('errorMsg');
+  el.textContent=msg; el.style.display='block';
+  setTimeout(()=>{ el.style.display='none'; }, 15000);
+}
 const WD = ['日','月','火','水','木','金','土'];
 const COLORS = ['#1a73e8','#e53935','#43a047','#fb8c00','#8e24aa','#00897b','#6d4c41','#546e7a'];
 const PREP_KW = ['研修','講座','講義','セミナー','ワークショップ','プレゼン','発表','登壇','大学','授業'];
@@ -288,6 +294,10 @@ function gapiLoaded(){
 function gisLoaded(){
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID, scope:SCOPES, callback:onToken,
+    error_callback:(err)=>{
+      console.error('GIS error:', err);
+      showError('ログインエラー: '+(err.type||err.message||JSON.stringify(err)));
+    },
   });
   gisInited=true; maybeRestore();
 }
@@ -297,9 +307,15 @@ function maybeRestore(){
   if(s){ try{ gapi.client.setToken(JSON.parse(s)); showDash(); }catch(e){} }
 }
 function onToken(r){
-  if(r.error) return;
+  console.log('onToken called:', r);
+  if(r.error){
+    console.error('Token error:', r);
+    showError('認証エラー: '+r.error);
+    return;
+  }
   const t=gapi.client.getToken(); t._savedAt=Date.now();
   localStorage.setItem('gapi_token',JSON.stringify(t));
+  console.log('Token saved, calling showDash');
   showDash();
 }
 async function refreshToken(){
@@ -312,6 +328,7 @@ async function refreshToken(){
 }
 function handleLogin(){
   if(!gapiInited||!gisInited){alert('読み込み中です...');return;}
+  console.log('handleLogin: requesting token...');
   tokenClient.requestAccessToken({prompt:'consent'});
 }
 function handleLogout(){
@@ -351,12 +368,16 @@ async function showDash(){
 
   // User info
   try{
+    console.log('Fetching userinfo...');
     const r=await gapi.client.request({path:'https://www.googleapis.com/oauth2/v2/userinfo'});
+    console.log('Userinfo OK:', r.result);
     const u=r.result;
     document.getElementById('userAvatar').src=u.picture||'';
     document.getElementById('userName').textContent=u.name||u.email||'';
     setGreeting((u.name||u.email||'').split(' ')[0].split('@')[0]);
   }catch(e){
+    console.error('Userinfo failed:', e);
+    showError('データ取得に失敗しました: '+(e.result?.error?.message||e.message||'不明なエラー')+'\n再度ログインしてください。');
     localStorage.removeItem('gapi_token');
     document.getElementById('loginView').style.display='flex';
     document.getElementById('dashView').style.display='none';
