@@ -144,6 +144,32 @@ body {
 .etag.prep { background:#fce4ec; color:#c62828; }
 .etag.trip { background:#f3e5f5; color:#7b1fa2; }
 
+/* Checkboxes */
+.action-check {
+  flex-shrink:0; width:22px; height:22px; border-radius:6px;
+  border:2px solid #ccc; background:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff; transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent; margin-top:1px;
+}
+.action-check.done { background:var(--green); border-color:var(--green); }
+.action-item.done .action-title,
+.action-item.done .action-desc { text-decoration:line-through; color:#bbb; }
+.action-item.done .action-icon { opacity:0.3; }
+
+.email-check {
+  flex-shrink:0; width:20px; height:20px; border-radius:5px;
+  border:2px solid #ccc; background:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; color:#fff; transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent; margin-top:2px;
+}
+.email-check.done { background:var(--green); border-color:var(--green); }
+.email-item.done .email-from,
+.email-item.done .email-subj { text-decoration:line-through; color:#bbb; }
+.email-item.done .email-star,
+.email-item.done .email-ai { opacity:0.3; }
+
 /* Loading */
 .loading { text-align:center; padding:20px; color:#bbb; font-size:12px; }
 .spinner {
@@ -228,7 +254,7 @@ body {
 //  CONFIG
 // ============================================================
 const CLIENT_ID = '1018965701860-pu4far3ehjccj97b3rj6bfn19c3tjuc9.apps.googleusercontent.com';
-const GEMINI_API_KEY = 'AIzaSyBzG9Wy6KmrvfTtAXEQmoZzN4xq1q14U0w';
+const GEMINI_API_KEY = 'AIzaSyBLXzAHlv9GdQWXXEAK_Lwd_ryDa__c9_Q';
 const SCOPES = [
   'openid',
   'email',
@@ -246,6 +272,26 @@ function showError(msg){
   el.textContent=msg; el.style.display='block';
   setTimeout(()=>{ el.style.display='none'; }, 15000);
 }
+// ============================================================
+//  CHECKBOX STATE (localStorage)
+// ============================================================
+const TODAY_KEY='ms_done_'+new Date().toISOString().slice(0,10);
+function getDoneItems(){ try{return JSON.parse(localStorage.getItem(TODAY_KEY))||{};}catch(e){return {};} }
+function toggleDone(id){
+  const d=getDoneItems(); d[id]=!d[id]; if(!d[id]) delete d[id];
+  localStorage.setItem(TODAY_KEY,JSON.stringify(d));
+  // Toggle UI
+  const el=document.querySelector(`[data-done-id="${id}"]`);
+  if(el){
+    const item=el.closest('.action-item,.email-item');
+    const check=el;
+    if(d[id]){ check.classList.add('done'); check.innerHTML='✓'; item.classList.add('done'); }
+    else { check.classList.remove('done'); check.innerHTML=''; item.classList.remove('done'); }
+  }
+}
+function doneAttr(id){ const d=getDoneItems(); return d[id]?'done':''; }
+function doneCheck(id){ const d=getDoneItems(); return d[id]?'✓':''; }
+
 const WD = ['日','月','火','水','木','金','土'];
 const COLORS = ['#1a73e8','#e53935','#43a047','#fb8c00','#8e24aa','#00897b','#6d4c41','#546e7a'];
 const PREP_KW = ['研修','講座','講義','セミナー','ワークショップ','プレゼン','発表','登壇','大学','授業'];
@@ -518,15 +564,17 @@ async function loadStarred(){
   ));
   starredThreads=details;
 
-  let html='';
+  let html=''; let si=0;
   details.forEach(t=>{
     const msgs=t.messages||[];
     const last=msgs[msgs.length-1];
     const hd={}; (last.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
     const date=new Date(parseInt(last.internalDate));
     const ts=H.sd(date,now)?H.ft(date.toISOString())||'':H.fd(date);
+    const id='star_'+si++;
 
-    html+=`<div class="email-item">
+    html+=`<div class="email-item ${doneAttr(id)}">
+      <div class="email-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
       <div class="email-star">⭐</div>
       <div class="email-info">
         <div class="email-from">${H.sn(hd.From||'')}</div>
@@ -665,9 +713,11 @@ function parseAndRender(text){
       if(actions.length){
         document.getElementById('actionsCard').style.display='block';
         document.getElementById('actionBadge').textContent=actions.length;
-        let html='';
+        let html=''; let ai=0;
         actions.forEach(a=>{
-          html+=`<div class="action-item">
+          const id='act_'+ai++;
+          html+=`<div class="action-item ${doneAttr(id)}">
+            <div class="action-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
             <div class="action-icon">${a.icon||'📌'}</div>
             <div class="action-info">
               <div class="action-title"><span class="action-tag ${a.urgency||'info'}">${a.urgency==='urgent'?'今日':a.urgency==='soon'?'近日中':'参考'}</span> ${a.title}</div>
@@ -688,9 +738,11 @@ function parseAndRender(text){
       if(emails.length){
         document.getElementById('aiEmailCard').style.display='block';
         document.getElementById('aiEmailBadge').textContent=emails.length;
-        let html='';
+        let html=''; let ei=0;
         emails.forEach(e=>{
-          html+=`<div class="email-item">
+          const id='aieml_'+ei++;
+          html+=`<div class="email-item ${doneAttr(id)}">
+            <div class="email-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
             <div class="email-ai">💡</div>
             <div class="email-info">
               <div class="email-from">${e.from}</div>
@@ -762,9 +814,11 @@ function runRuleBasedAnalysis(){
   if(actions.length){
     document.getElementById('actionsCard').style.display='block';
     document.getElementById('actionBadge').textContent=actions.length;
-    let html='';
+    let html=''; let ri=0;
     actions.forEach(a=>{
-      html+=`<div class="action-item">
+      const id='ract_'+ri++;
+      html+=`<div class="action-item ${doneAttr(id)}">
+        <div class="action-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
         <div class="action-icon">${a.icon}</div>
         <div class="action-info">
           <div class="action-title"><span class="action-tag ${a.urgency}">${a.urgency==='urgent'?'今日':'近日中'}</span> ${a.title}</div>
