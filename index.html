@@ -10,332 +10,446 @@
 <meta name="theme-color" content="#1a73e8">
 <style>
 :root {
-  --blue: #1a73e8; --red: #e53935; --green: #2e7d32; --orange: #e65100;
-  --purple: #6a1b9a; --bg: #f5f6f8; --card: #fff; --text: #1a1a1a;
-  --sub: #666; --border: #eee; --radius: 12px;
+  --blue:#2563eb; --red:#dc2626; --green:#16a34a; --orange:#ea580c;
+  --purple:#7c3aed; --bg:#f8fafc; --card:#fff; --text:#0f172a;
+  --sub:#64748b; --border:#e2e8f0; --radius:14px;
+  --tab-h:60px;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
-  background: var(--bg); color: var(--text); line-height:1.6;
-  -webkit-font-smoothing: antialiased; min-height:100dvh;
-}
-.container { max-width:480px; margin:0 auto; padding:16px 14px 80px; }
-
-/* Login */
-#loginView {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  min-height:80dvh; text-align:center; padding:20px;
-}
-#loginView h1 { font-size:24px; margin-bottom:4px; }
-#loginView p { font-size:14px; color:var(--sub); margin-bottom:32px; }
-.login-btn {
-  display:inline-flex; align-items:center; gap:10px;
-  background:#fff; border:1px solid #ddd; border-radius:8px;
-  padding:12px 24px; font-size:15px; font-weight:600; cursor:pointer;
-  box-shadow:0 1px 3px rgba(0,0,0,0.08);
-}
-.login-btn svg { width:20px; height:20px; }
-
-/* Dashboard */
-#dashView { display:none; }
-.user-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.user-info { display:flex; align-items:center; gap:8px; }
-.user-avatar { width:28px; height:28px; border-radius:50%; }
-.user-name { font-size:12px; color:var(--sub); }
-.logout-btn {
-  font-size:11px; color:var(--sub); background:none; border:1px solid #ddd;
-  border-radius:6px; padding:4px 10px; cursor:pointer;
-}
-.greeting { font-size:20px; font-weight:700; margin-bottom:2px; }
-.date-line { font-size:13px; color:var(--sub); margin-bottom:16px; }
-
-/* Cards */
-.card {
-  background:var(--card); border-radius:var(--radius); padding:14px 16px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.05); margin-bottom:12px;
-}
-.card-title {
-  font-size:13px; font-weight:700; color:#444; margin-bottom:10px;
-  display:flex; align-items:center; gap:8px;
-}
-.card-title .icon { font-size:16px; }
-.badge {
-  display:inline-flex; align-items:center; justify-content:center;
-  border-radius:10px; font-size:11px; font-weight:700; padding:2px 8px;
-  margin-left:auto;
-}
-.badge.red { background:#fce4ec; color:#c62828; }
-.badge.orange { background:#fff3e0; color:var(--orange); }
-.badge.blue { background:#e8f4fd; color:var(--blue); }
-.badge.green { background:#e8f5e9; color:var(--green); }
-
-/* Briefing */
-.briefing {
-  font-size:14px; color:#333; line-height:1.8;
-  background:linear-gradient(135deg, #f0f7ff, #f5f0ff); border-radius:10px;
-  padding:14px 16px; border-left:3px solid var(--blue);
-  white-space: pre-wrap;
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.7;
+  -webkit-font-smoothing:antialiased;min-height:100dvh;font-size:15px;
 }
 
-/* Action items */
-.action-item {
-  display:flex; gap:10px; padding:10px 0;
-  border-bottom:1px solid #f5f5f5;
+/* ===== LOGIN ===== */
+#loginView{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:90dvh;text-align:center;padding:24px;
 }
-.action-item:last-child { border-bottom:none; }
-.action-icon { font-size:18px; flex-shrink:0; padding-top:1px; }
-.action-info { flex:1; min-width:0; }
-.action-title { font-size:13px; font-weight:600; }
-.action-desc { font-size:11px; color:#777; margin-top:2px; }
-.action-tag {
-  display:inline-block; font-size:10px; font-weight:600; padding:1px 6px;
-  border-radius:4px; margin-right:4px;
+#loginView h1{font-size:28px;margin-bottom:6px;letter-spacing:-0.5px;}
+#loginView .subtitle{font-size:15px;color:var(--sub);margin-bottom:36px;}
+.login-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  background:#fff;border:1px solid #d1d5db;border-radius:12px;
+  padding:14px 28px;font-size:16px;font-weight:600;cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
 }
-.action-tag.urgent { background:#fce4ec; color:#c62828; }
-.action-tag.soon { background:#fff3e0; color:var(--orange); }
-.action-tag.info { background:#e8f4fd; color:var(--blue); }
+.login-btn svg{width:22px;height:22px;}
+#errorMsg{display:none;margin-top:16px;padding:12px 16px;background:#fef3c7;border:1px solid #fbbf24;border-radius:10px;font-size:13px;color:#92400e;max-width:340px;text-align:left;white-space:pre-wrap;}
 
-/* Email items */
-.email-item {
-  display:flex; align-items:flex-start; gap:8px;
-  padding:8px 0; border-bottom:1px solid #f5f5f5;
-}
-.email-item:last-child { border-bottom:none; }
-.email-star { color:#f9a825; font-size:14px; flex-shrink:0; margin-top:2px; }
-.email-ai { color:var(--blue); font-size:14px; flex-shrink:0; margin-top:2px; }
-.email-info { flex:1; min-width:0; }
-.email-from { font-size:11px; font-weight:600; color:#333; }
-.email-subj { font-size:11px; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.email-reason { font-size:10px; color:var(--blue); margin-top:2px; font-style:italic; }
-.email-time { font-size:10px; color:#bbb; flex-shrink:0; }
+/* ===== DASHBOARD LAYOUT ===== */
+#dashView{display:none;min-height:100dvh;}
+.tab-panel{display:none;max-width:500px;margin:0 auto;padding:16px 16px calc(var(--tab-h) + 20px);}
+.tab-panel.active{display:block;}
 
-/* Schedule */
-.sched-day { margin-bottom:4px; }
-.sched-day-header {
-  font-size:12px; font-weight:700; color:#555; padding:8px 0 4px;
-  border-bottom:1px solid var(--border); margin-bottom:4px;
-  cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;
-  display:flex; align-items:center; gap:6px;
+/* ===== BOTTOM TABS ===== */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;height:var(--tab-h);
+  background:#fff;border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;align-items:center;
+  z-index:100;padding-bottom:env(safe-area-inset-bottom);
 }
-.sched-day-header.today { color:var(--blue); }
-.sched-day-header .cnt {
-  font-size:10px; color:#fff; background:var(--blue); border-radius:8px;
-  padding:1px 7px; font-weight:700;
+.tab-btn{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;cursor:pointer;padding:6px 12px;
+  color:#94a3b8;font-size:10px;font-weight:600;
+  -webkit-tap-highlight-color:transparent;transition:color 0.2s;
 }
-.sched-day-header.today .cnt { background:var(--red); }
-.chevron { font-size:10px; color:#bbb; transition:transform 0.2s; }
-.chevron.closed { transform:rotate(-90deg); }
-.sched-events { overflow:hidden; transition:max-height 0.3s; }
-.sched-events.closed { max-height:0 !important; }
-.ev-item { display:flex; gap:8px; padding:6px 0; border-bottom:1px solid #fafafa; }
-.ev-item:last-child { border-bottom:none; }
-.ev-bar { width:3px; border-radius:2px; min-height:28px; flex-shrink:0; }
-.ev-time { flex-shrink:0; width:76px; font-size:11px; font-weight:600; color:var(--blue); }
-.ev-time.past { color:#ccc; }
-.ev-detail { flex:1; min-width:0; }
-.ev-name { font-size:12px; font-weight:600; }
-.ev-name.past { color:#aaa; text-decoration:line-through; }
-.ev-loc { font-size:10px; color:#999; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ev-tags { margin-top:2px; }
-.etag { display:inline-block; font-size:9px; font-weight:600; padding:0 5px; border-radius:3px; margin-right:3px; }
-.etag.meet { background:#e8f5e9; color:var(--green); }
-.etag.ppl { background:#e3f2fd; color:#1565c0; }
-.etag.prep { background:#fce4ec; color:#c62828; }
-.etag.trip { background:#f3e5f5; color:#7b1fa2; }
+.tab-btn.active{color:var(--blue);}
+.tab-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.tab-badge{
+  position:absolute;top:-2px;right:-6px;
+  background:var(--red);color:#fff;font-size:9px;font-weight:700;
+  min-width:16px;height:16px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;
+}
 
-/* Checkboxes */
-.action-check {
-  flex-shrink:0; width:22px; height:22px; border-radius:6px;
-  border:2px solid #ccc; background:#fff; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  font-size:14px; color:#fff; transition:all 0.2s;
-  -webkit-tap-highlight-color:transparent; margin-top:1px;
+/* ===== USER BAR ===== */
+.user-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.user-info{display:flex;align-items:center;gap:10px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;}
+.user-name{font-size:13px;color:var(--sub);}
+.logout-btn{
+  font-size:12px;color:var(--sub);background:none;border:1px solid var(--border);
+  border-radius:8px;padding:5px 12px;cursor:pointer;
 }
-.action-check.done { background:var(--green); border-color:var(--green); }
-.action-item.done .action-title,
-.action-item.done .action-desc { text-decoration:line-through; color:#bbb; }
-.action-item.done .action-icon { opacity:0.3; }
+.greeting{font-size:22px;font-weight:700;margin-bottom:2px;}
+.date-line{font-size:14px;color:var(--sub);margin-bottom:18px;}
 
-.email-check {
-  flex-shrink:0; width:20px; height:20px; border-radius:5px;
-  border:2px solid #ccc; background:#fff; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; color:#fff; transition:all 0.2s;
-  -webkit-tap-highlight-color:transparent; margin-top:2px;
+/* ===== CARDS ===== */
+.card{
+  background:var(--card);border-radius:var(--radius);padding:16px 18px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);margin-bottom:14px;
 }
-.email-check.done { background:var(--green); border-color:var(--green); }
-.email-item.done .email-from,
-.email-item.done .email-subj { text-decoration:line-through; color:#bbb; }
-.email-item.done .email-star,
-.email-item.done .email-ai { opacity:0.3; }
+.card-title{
+  font-size:15px;font-weight:700;color:#334155;margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.card-title svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:10px;font-size:12px;font-weight:700;padding:2px 9px;margin-left:auto;
+}
+.badge.red{background:#fee2e2;color:#dc2626;}
+.badge.orange{background:#ffedd5;color:var(--orange);}
+.badge.blue{background:#dbeafe;color:var(--blue);}
 
-/* Loading */
-.loading { text-align:center; padding:20px; color:#bbb; font-size:12px; }
-.spinner {
-  display:inline-block; width:16px; height:16px;
-  border:2px solid #e0e0e0; border-top-color:var(--blue);
-  border-radius:50%; animation:spin 0.7s linear infinite;
-  vertical-align:middle; margin-right:6px;
+/* ===== BRIEFING ===== */
+.briefing{
+  font-size:15px;color:#1e293b;line-height:1.9;
+  background:linear-gradient(135deg,#eff6ff,#f5f3ff);border-radius:12px;
+  padding:16px 18px;border-left:3px solid var(--blue);white-space:pre-wrap;
 }
-@keyframes spin { to { transform:rotate(360deg); } }
-.empty { text-align:center; padding:14px; color:#ccc; font-size:12px; }
 
-/* Section divider */
-.section-label {
-  font-size:11px; font-weight:700; color:#aaa; text-transform:uppercase;
-  letter-spacing:1px; margin:18px 0 8px; padding-left:2px;
+/* ===== ACTION ITEMS ===== */
+.action-item{
+  display:flex;gap:12px;padding:12px 0;
+  border-bottom:1px solid #f1f5f9;transition:opacity 0.4s,max-height 0.4s;
+  overflow:hidden;
 }
+.action-item:last-child{border-bottom:none;}
+.action-item.removing{opacity:0;max-height:0 !important;padding:0;margin:0;border:none;}
+.action-icon svg{width:20px;height:20px;flex-shrink:0;margin-top:2px;}
+.action-info{flex:1;min-width:0;}
+.action-title{font-size:15px;font-weight:600;}
+.action-desc{font-size:13px;color:#64748b;margin-top:3px;}
+.action-tag{
+  display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;
+  border-radius:5px;margin-right:5px;
+}
+.action-tag.urgent{background:#fee2e2;color:#dc2626;}
+.action-tag.soon{background:#ffedd5;color:var(--orange);}
+.action-tag.info{background:#dbeafe;color:var(--blue);}
+
+/* ===== CHECK BUTTON ===== */
+.check-btn{
+  flex-shrink:0;width:26px;height:26px;border-radius:8px;
+  border:2px solid #cbd5e1;background:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;margin-top:1px;transition:all 0.2s;
+}
+.check-btn:active{transform:scale(0.9);}
+.check-btn svg{width:16px;height:16px;stroke:#fff;stroke-width:2.5;fill:none;opacity:0;transition:opacity 0.2s;}
+.check-btn.done{background:var(--green);border-color:var(--green);}
+.check-btn.done svg{opacity:1;}
+
+/* ===== EMAIL ITEMS ===== */
+.email-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 0;border-bottom:1px solid #f1f5f9;
+  transition:opacity 0.4s,max-height 0.4s;overflow:hidden;
+}
+.email-item:last-child{border-bottom:none;}
+.email-item.removing{opacity:0;max-height:0 !important;padding:0;margin:0;border:none;}
+.email-icon{flex-shrink:0;margin-top:3px;}
+.email-icon svg{width:18px;height:18px;}
+.email-info{flex:1;min-width:0;}
+.email-from{font-size:14px;font-weight:600;color:#1e293b;}
+.email-subj{font-size:13px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-reason{font-size:12px;color:var(--blue);margin-top:3px;font-style:italic;}
+.email-time{font-size:11px;color:#94a3b8;flex-shrink:0;}
+
+/* ===== SCHEDULE ===== */
+.sched-day{margin-bottom:6px;}
+.sched-day-header{
+  font-size:14px;font-weight:700;color:#475569;padding:10px 0 6px;
+  border-bottom:1px solid var(--border);margin-bottom:6px;
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;gap:8px;
+}
+.sched-day-header.today{color:var(--blue);}
+.sched-day-header .cnt{
+  font-size:11px;color:#fff;background:var(--blue);border-radius:8px;
+  padding:2px 8px;font-weight:700;
+}
+.sched-day-header.today .cnt{background:var(--red);}
+.chevron{font-size:10px;color:#94a3b8;transition:transform 0.2s;}
+.chevron.closed{transform:rotate(-90deg);}
+.sched-events{overflow:hidden;transition:max-height 0.3s;}
+.sched-events.closed{max-height:0 !important;}
+.ev-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f8fafc;}
+.ev-item:last-child{border-bottom:none;}
+.ev-bar{width:3px;border-radius:2px;min-height:32px;flex-shrink:0;}
+.ev-time{flex-shrink:0;width:80px;font-size:13px;font-weight:600;color:var(--blue);}
+.ev-time.past{color:#cbd5e1;}
+.ev-detail{flex:1;min-width:0;}
+.ev-name{font-size:14px;font-weight:600;}
+.ev-name.past{color:#94a3b8;text-decoration:line-through;}
+.ev-loc{font-size:12px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ev-tags{margin-top:3px;}
+.etag{display:inline-block;font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;margin-right:4px;}
+.etag.meet{background:#dcfce7;color:var(--green);}
+.etag.ppl{background:#dbeafe;color:#2563eb;}
+.etag.prep{background:#fee2e2;color:#dc2626;}
+.etag.trip{background:#f3e8ff;color:#7c3aed;}
+
+/* ===== CHAT ===== */
+.chat-container{display:flex;flex-direction:column;height:calc(100dvh - var(--tab-h) - 20px);}
+.chat-messages{flex:1;overflow-y:auto;padding:8px 0;}
+.chat-msg{margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;}
+.chat-msg.user{flex-direction:row-reverse;}
+.chat-bubble{
+  max-width:80%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.7;
+  white-space:pre-wrap;
+}
+.chat-msg.assistant .chat-bubble{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
+.chat-msg.user .chat-bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px;}
+.chat-avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;background:#f1f5f9;
+}
+.chat-input-bar{
+  display:flex;gap:8px;padding:10px 0;border-top:1px solid var(--border);
+}
+.chat-input{
+  flex:1;border:1px solid var(--border);border-radius:12px;
+  padding:10px 14px;font-size:15px;outline:none;resize:none;
+  font-family:inherit;min-height:42px;max-height:100px;
+}
+.chat-send{
+  width:42px;height:42px;border-radius:50%;border:none;
+  background:var(--blue);color:#fff;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.chat-send:disabled{background:#cbd5e1;cursor:default;}
+.chat-send svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;}
+.chat-typing{font-size:13px;color:var(--sub);padding:8px 0;font-style:italic;}
+
+/* ===== LOADING ===== */
+.loading{text-align:center;padding:24px;color:#94a3b8;font-size:14px;}
+.spinner{
+  display:inline-block;width:18px;height:18px;
+  border:2px solid #e2e8f0;border-top-color:var(--blue);
+  border-radius:50%;animation:spin 0.7s linear infinite;
+  vertical-align:middle;margin-right:8px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty{text-align:center;padding:18px;color:#cbd5e1;font-size:14px;}
+.section-label{font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;padding-left:2px;}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ===== LOGIN ===== -->
 <div id="loginView">
   <h1>My Secretary</h1>
-  <p>あなたの予定とメールを読んで<br>やるべきことを教えてくれる秘書ツール</p>
+  <p class="subtitle">予定とメールを読んで<br>やるべきことを教えてくれるAI秘書</p>
   <button class="login-btn" onclick="handleLogin()">
     <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
     Googleでログイン
   </button>
-  <p style="margin-top:24px;font-size:11px;color:#bbb;">Calendar・Gmail・Driveの読み取り権限が必要です</p>
-  <div id="errorMsg" style="display:none;margin-top:16px;padding:12px 16px;background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;font-size:12px;color:#e65100;max-width:320px;text-align:left;white-space:pre-wrap;"></div>
+  <p style="margin-top:28px;font-size:12px;color:#94a3b8;">Calendar・Gmail の読み取り権限が必要です</p>
+  <div id="errorMsg"></div>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashView" class="container">
-  <div class="user-bar">
-    <div class="user-info">
-      <img id="userAvatar" class="user-avatar" src="" alt="">
-      <span id="userName" class="user-name"></span>
+<!-- ===== DASHBOARD ===== -->
+<div id="dashView">
+
+  <!-- TAB: HOME -->
+  <div id="panelHome" class="tab-panel active">
+    <div class="user-bar">
+      <div class="user-info">
+        <img id="userAvatar" class="user-avatar" src="" alt="">
+        <span id="userName" class="user-name"></span>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
     </div>
-    <button class="logout-btn" onclick="handleLogout()">ログアウト</button>
-  </div>
-  <div class="greeting" id="greeting"></div>
-  <div class="date-line" id="dateLine"></div>
-
-  <!-- AI Briefing -->
-  <div class="card" id="briefingCard">
-    <div class="card-title"><span class="icon">🤖</span> 秘書からのブリーフィング</div>
-    <div class="loading" id="briefingLoading"><span class="spinner"></span>予定とメールを分析中...</div>
-    <div class="briefing" id="briefingText" style="display:none;"></div>
-  </div>
-
-  <!-- Action Items (AI generated) -->
-  <div class="card" id="actionsCard" style="display:none;">
-    <div class="card-title"><span class="icon">⚡</span> やること・気をつけること <span class="badge red" id="actionBadge">0</span></div>
-    <div id="actionsList"></div>
-  </div>
-
-  <!-- Starred Emails (TODO) -->
-  <div class="section-label">対応が必要なメール</div>
-  <div class="card" id="starredCard">
-    <div class="card-title"><span class="icon">⭐</span> スター付き（あなたのTODO）<span class="badge orange" id="starBadge">0</span></div>
-    <div class="loading" id="starLoading"><span class="spinner"></span>読み込み中...</div>
-    <div id="starredList"></div>
+    <div class="greeting" id="greeting"></div>
+    <div class="date-line" id="dateLine"></div>
+    <div class="card" id="briefingCard">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a4 4 0 0 0-4 4v1a4 4 0 0 0 8 0V6a4 4 0 0 0-4-4z" opacity="0"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        秘書からのブリーフィング
+      </div>
+      <div class="loading" id="briefingLoading"><span class="spinner"></span>予定とメールを分析中...</div>
+      <div class="briefing" id="briefingText" style="display:none;"></div>
+    </div>
+    <div class="card" id="homeActionsCard" style="display:none;">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        やること <span class="badge red" id="homeActionBadge">0</span>
+      </div>
+      <div id="homeActionsList"></div>
+    </div>
   </div>
 
-  <!-- AI-detected action-needed emails -->
-  <div class="card" id="aiEmailCard" style="display:none;">
-    <div class="card-title"><span class="icon">🔍</span> これも対応した方がいいかも <span class="badge blue" id="aiEmailBadge">0</span></div>
-    <div id="aiEmailList"></div>
+  <!-- TAB: TASKS -->
+  <div id="panelTasks" class="tab-panel">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">やること・気をつけること</h2>
+    <div class="card" id="actionsCard" style="display:none;">
+      <div class="loading" id="actionsLoading" style="display:none;"><span class="spinner"></span>分析中...</div>
+      <div id="actionsList"></div>
+    </div>
+    <div id="tasksEmpty" class="empty">タスクはありません</div>
   </div>
 
-  <!-- Weekly Schedule -->
-  <div class="section-label">スケジュール</div>
-  <div class="card" id="schedCard">
-    <div class="loading" id="schedLoading"><span class="spinner"></span>カレンダーを読み込み中...</div>
-    <div id="weekSched"></div>
+  <!-- TAB: MAIL -->
+  <div id="panelMail" class="tab-panel">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">メール</h2>
+    <div class="card" id="starredCard">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" style="fill:#f59e0b;stroke:#f59e0b;stroke-width:1.5;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        スター付き（あなたのTODO）<span class="badge orange" id="starBadge">0</span>
+      </div>
+      <div class="loading" id="starLoading"><span class="spinner"></span>読み込み中...</div>
+      <div id="starredList"></div>
+    </div>
+    <div class="card" id="aiEmailCard" style="display:none;">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        これも対応した方がいいかも <span class="badge blue" id="aiEmailBadge">0</span>
+      </div>
+      <div id="aiEmailList"></div>
+    </div>
   </div>
+
+  <!-- TAB: SCHEDULE -->
+  <div id="panelSchedule" class="tab-panel">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;">1週間のスケジュール</h2>
+    <div class="card" id="schedCard">
+      <div class="loading" id="schedLoading"><span class="spinner"></span>カレンダーを読み込み中...</div>
+      <div id="weekSched"></div>
+    </div>
+  </div>
+
+  <!-- TAB: CHAT -->
+  <div id="panelChat" class="tab-panel">
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg assistant">
+          <div class="chat-avatar">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="#64748b" fill="none" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="chat-bubble">こんにちは！AI秘書です。
+予定やメールについて質問があればどうぞ。
+「この会議の準備は？」「来週の出張の持ち物は？」など、なんでも聞いてください。
+フィードバックも歓迎です！</div>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <textarea class="chat-input" id="chatInput" rows="1" placeholder="秘書に話しかける..."></textarea>
+        <button class="chat-send" id="chatSend" onclick="sendChat()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('Home',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      ホーム
+    </button>
+    <button class="tab-btn" onclick="switchTab('Tasks',this)" style="position:relative;">
+      <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span id="taskTabBadge" class="tab-badge" style="display:none;">0</span>
+      やること
+    </button>
+    <button class="tab-btn" onclick="switchTab('Mail',this)" style="position:relative;">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+      <span id="mailTabBadge" class="tab-badge" style="display:none;">0</span>
+      メール
+    </button>
+    <button class="tab-btn" onclick="switchTab('Schedule',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      予定
+    </button>
+    <button class="tab-btn" onclick="switchTab('Chat',this)">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      秘書
+    </button>
+  </nav>
 </div>
 
 <script>
 // ============================================================
 //  CONFIG
 // ============================================================
-const CLIENT_ID = '1018965701860-pu4far3ehjccj97b3rj6bfn19c3tjuc9.apps.googleusercontent.com';
-const GEMINI_API_KEY = 'AIzaSyBLXzAHlv9GdQWXXEAK_Lwd_ryDa__c9_Q';
-const SCOPES = [
-  'openid',
-  'email',
-  'profile',
+const CLIENT_ID='1018965701860-pu4far3ehjccj97b3rj6bfn19c3tjuc9.apps.googleusercontent.com';
+const GEMINI_API_KEY='AIzaSyBLXzAHlv9GdQWXXEAK_Lwd_ryDa__c9_Q';
+const SCOPES=['openid','email','profile',
   'https://www.googleapis.com/auth/calendar.readonly',
-  'https://www.googleapis.com/auth/gmail.readonly',
-  'https://www.googleapis.com/auth/drive.readonly'
+  'https://www.googleapis.com/auth/gmail.readonly'
 ].join(' ');
 
 // ============================================================
-//  CONSTANTS
+//  CONSTANTS & HELPERS
 // ============================================================
-function showError(msg){
-  const el=document.getElementById('errorMsg');
-  el.textContent=msg; el.style.display='block';
-  setTimeout(()=>{ el.style.display='none'; }, 15000);
-}
+function showError(msg){const el=document.getElementById('errorMsg');el.textContent=msg;el.style.display='block';setTimeout(()=>{el.style.display='none';},15000);}
+
+const WD=['日','月','火','水','木','金','土'];
+const COLORS=['#2563eb','#dc2626','#16a34a','#ea580c','#7c3aed','#0891b2','#78716c','#475569'];
+const PREP_KW=['研修','講座','講義','セミナー','ワークショップ','プレゼン','発表','登壇','大学','授業'];
+const TRIP_KW=['出張','泊','宿泊','移動','飛行機','新幹線','ホテル'];
+const MTG_KW=['打合せ','打ち合わせ','ミーティング','MTG','商談','面談','提案'];
+const now=new Date();
+
+const H={
+  ft(iso){const d=new Date(iso);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');},
+  fd(d){return(d.getMonth()+1)+'/'+d.getDate()+'('+WD[d.getDay()]+')';},
+  sd(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();},
+  db(a,b){return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/864e5);},
+  sn(s){const m=s.match(/^([^<]+)/);return m?m[1].trim():s.split('@')[0];},
+  lk(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');},
+  np(ev){return PREP_KW.some(k=>(ev.summary||'').includes(k));},
+  nt(ev){const t=(ev.summary||'')+(ev.description||'')+(ev.location||'');return TRIP_KW.some(k=>t.includes(k));},
+  nm(ev){return MTG_KW.some(k=>(ev.summary||'').includes(k));},
+};
+
 // ============================================================
-//  CHECKBOX STATE (localStorage)
+//  DONE ITEMS (check to dismiss)
 // ============================================================
-const TODAY_KEY='ms_done_'+new Date().toISOString().slice(0,10);
-function getDoneItems(){ try{return JSON.parse(localStorage.getItem(TODAY_KEY))||{};}catch(e){return {};} }
-function toggleDone(id){
-  const d=getDoneItems(); d[id]=!d[id]; if(!d[id]) delete d[id];
+const TODAY_KEY='ms_done_'+H.lk(now);
+function getDone(){try{return JSON.parse(localStorage.getItem(TODAY_KEY))||{};}catch(e){return{};}}
+function markDone(id){
+  const d=getDone();d[id]=true;
   localStorage.setItem(TODAY_KEY,JSON.stringify(d));
-  // Toggle UI
-  const el=document.querySelector(`[data-done-id="${id}"]`);
-  if(el){
-    const item=el.closest('.action-item,.email-item');
-    const check=el;
-    if(d[id]){ check.classList.add('done'); check.innerHTML='✓'; item.classList.add('done'); }
-    else { check.classList.remove('done'); check.innerHTML=''; item.classList.remove('done'); }
+  document.querySelectorAll(`[data-id="${id}"]`).forEach(el=>{
+    el.classList.add('removing');
+    setTimeout(()=>el.remove(),500);
+  });
+  updateBadges();
+}
+function isDone(id){return getDone()[id];}
+
+// ============================================================
+//  TAB NAVIGATION
+// ============================================================
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='Chat'){
+    const msgs=document.getElementById('chatMessages');
+    msgs.scrollTop=msgs.scrollHeight;
   }
 }
-function doneAttr(id){ const d=getDoneItems(); return d[id]?'done':''; }
-function doneCheck(id){ const d=getDoneItems(); return d[id]?'✓':''; }
-
-const WD = ['日','月','火','水','木','金','土'];
-const COLORS = ['#1a73e8','#e53935','#43a047','#fb8c00','#8e24aa','#00897b','#6d4c41','#546e7a'];
-const PREP_KW = ['研修','講座','講義','セミナー','ワークショップ','プレゼン','発表','登壇','大学','授業'];
-const TRIP_KW = ['出張','泊','宿泊','移動','飛行機','新幹線','ホテル'];
-const MTG_KW = ['打合せ','打ち合わせ','ミーティング','MTG','商談','面談','提案'];
-const now = new Date();
-
-// ============================================================
-//  HELPERS
-// ============================================================
-const H = {
-  ft(iso){ const d=new Date(iso); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); },
-  fd(d){ return (d.getMonth()+1)+'/'+d.getDate()+'('+WD[d.getDay()]+')'; },
-  sd(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); },
-  db(a,b){ return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/864e5); },
-  sn(s){ const m=s.match(/^([^<]+)/); return m?m[1].trim():s.split('@')[0]; },
-  lk(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
-  np(ev){ return PREP_KW.some(k=>(ev.summary||'').includes(k)); },
-  nt(ev){ const t=(ev.summary||'')+(ev.description||'')+(ev.location||''); return TRIP_KW.some(k=>t.includes(k)); },
-  nm(ev){ return MTG_KW.some(k=>(ev.summary||'').includes(k)); },
-};
 
 // ============================================================
 //  GREETING
 // ============================================================
-function setGreeting(name) {
+function setGreeting(name){
   const hr=now.getHours();
-  const g = hr<5?'おやすみ前の確認':hr<12?'おはようございます':hr<17?'こんにちは':'おつかれさまです';
-  document.getElementById('greeting').textContent = g + '、' + (name||'');
-  document.getElementById('dateLine').textContent =
+  const g=hr<5?'おやすみ前の確認':hr<12?'おはようございます':hr<17?'こんにちは':'おつかれさまです';
+  document.getElementById('greeting').textContent=g+'、'+(name||'');
+  document.getElementById('dateLine').textContent=
     now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日（'+WD[now.getDay()]+'）'+' '+hr+':'+now.getMinutes().toString().padStart(2,'0');
 }
 
 // ============================================================
-//  GOOGLE AUTH (fetch-based, no gapi.client dependency)
+//  GOOGLE AUTH
 // ============================================================
-let tokenClient, gisInited=false;
-let accessToken=null; // raw access token string
+let tokenClient,gisInited=false,accessToken=null;
 
 function gisLoaded(){
   tokenClient=google.accounts.oauth2.initTokenClient({
-    client_id:CLIENT_ID, scope:SCOPES, callback:onToken,
-    error_callback:(err)=>{
-      console.error('GIS error:', err);
+    client_id:CLIENT_ID,scope:SCOPES,callback:onToken,
+    error_callback:err=>{
+      console.error('GIS error:',err);
       showError('ログインエラー: '+(err.type||err.message||JSON.stringify(err)));
     },
   });
@@ -343,7 +457,7 @@ function gisLoaded(){
   maybeRestore();
 }
 function maybeRestore(){
-  if(!gisInited) return;
+  if(!gisInited)return;
   const s=localStorage.getItem('my_secretary_token');
   if(s){
     try{
@@ -351,115 +465,77 @@ function maybeRestore(){
       if(Date.now()-(t._savedAt||0)<55*60*1000){
         accessToken=t.access_token;
         showDash();
-      } else {
-        // Token expired, try silent refresh
+      }else{
         tokenClient.requestAccessToken({prompt:''});
       }
-    }catch(e){ localStorage.removeItem('my_secretary_token'); }
+    }catch(e){localStorage.removeItem('my_secretary_token');}
   }
 }
 function onToken(r){
-  console.log('onToken called');
-  if(r.error){
-    console.error('Token error:', r);
-    showError('認証エラー: '+r.error);
-    return;
-  }
+  if(r.error){showError('認証エラー: '+r.error);return;}
   accessToken=r.access_token;
-  const saved={access_token:r.access_token, _savedAt:Date.now()};
-  localStorage.setItem('my_secretary_token',JSON.stringify(saved));
-  console.log('Token saved, calling showDash');
+  localStorage.setItem('my_secretary_token',JSON.stringify({access_token:r.access_token,_savedAt:Date.now()}));
   showDash();
-}
-async function refreshTokenIfNeeded(){
-  const s=localStorage.getItem('my_secretary_token');
-  if(!s) return;
-  try{
-    const t=JSON.parse(s);
-    if(Date.now()-(t._savedAt||0)>50*60*1000){
-      tokenClient.requestAccessToken({prompt:''});
-    }
-  }catch(e){}
 }
 function handleLogin(){
   if(!gisInited){alert('読み込み中です...');return;}
   tokenClient.requestAccessToken({prompt:'consent'});
 }
 function handleLogout(){
-  if(accessToken) google.accounts.oauth2.revoke(accessToken);
+  if(accessToken)google.accounts.oauth2.revoke(accessToken);
   accessToken=null;
   localStorage.removeItem('my_secretary_token');
   document.getElementById('loginView').style.display='flex';
   document.getElementById('dashView').style.display='none';
 }
 
-// Helper: fetch Google API with auth header
 async function gFetch(url){
   const r=await fetch(url,{headers:{'Authorization':'Bearer '+accessToken}});
-  if(!r.ok){
-    const e=await r.json().catch(()=>({}));
-    throw new Error(e.error?.message||('HTTP '+r.status));
-  }
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||('HTTP '+r.status));}
   return r.json();
 }
 
 // ============================================================
 //  GEMINI API
 // ============================================================
-async function askGemini(prompt, signal) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-  const res = await fetch(url, {
-    method:'POST', signal,
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      contents:[{parts:[{text:prompt}]}],
-      generationConfig:{temperature:0.3, maxOutputTokens:2048}
-    })
+async function askGemini(prompt,signal){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const res=await fetch(url,{method:'POST',signal,headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:2048}})
   });
-  if(!res.ok){
-    const err=await res.text().catch(()=>'');
-    throw new Error('Gemini API HTTP '+res.status+': '+err.slice(0,100));
-  }
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  if(!res.ok)throw new Error('Gemini HTTP '+res.status);
+  const data=await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text||'';
 }
 
 // ============================================================
 //  SHOW DASHBOARD
 // ============================================================
-let calEvents=[], starredThreads=[], unreadThreads=[];
+let calEvents=[],starredThreads=[],unreadThreads=[];
 
 async function showDash(){
   document.getElementById('loginView').style.display='none';
   document.getElementById('dashView').style.display='block';
+  if(!accessToken){showError('トークンがありません。');document.getElementById('loginView').style.display='flex';document.getElementById('dashView').style.display='none';return;}
 
-  if(!accessToken){
-    showError('トークンがありません。再度ログインしてください。');
-    document.getElementById('loginView').style.display='flex';
-    document.getElementById('dashView').style.display='none';
-    return;
-  }
-
-  // User info
   try{
     const u=await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
     document.getElementById('userAvatar').src=u.picture||'';
     document.getElementById('userName').textContent=u.name||u.email||'';
     setGreeting((u.name||u.email||'').split(' ')[0].split('@')[0]);
   }catch(e){
-    console.error('Userinfo failed:', e);
-    showError('データ取得に失敗しました。再度ログインしてください。');
-    accessToken=null;
-    localStorage.removeItem('my_secretary_token');
-    document.getElementById('loginView').style.display='flex';
-    document.getElementById('dashView').style.display='none';
+    console.error('Auth failed:',e);
+    // Try silent refresh instead of immediately logging out
+    try{tokenClient.requestAccessToken({prompt:''});}catch(e2){
+      showError('データ取得に失敗しました。再度ログインしてください。');
+      accessToken=null;localStorage.removeItem('my_secretary_token');
+      document.getElementById('loginView').style.display='flex';
+      document.getElementById('dashView').style.display='none';
+    }
     return;
   }
 
-  // Load data in parallel
-  await Promise.allSettled([loadCalendar(), loadStarred(), loadUnread()]);
-
-  // Then run AI analysis
+  await Promise.allSettled([loadCalendar(),loadStarred(),loadUnread()]);
   runAIAnalysis();
 }
 
@@ -467,156 +543,103 @@ async function showDash(){
 //  CALENDAR
 // ============================================================
 async function loadCalendar(){
-  const s=new Date(now); s.setHours(0,0,0,0);
-  const e=new Date(s); e.setDate(e.getDate()+7);
-  const params=new URLSearchParams({
-    calendarId:'primary', timeMin:s.toISOString(), timeMax:e.toISOString(),
-    singleEvents:true, orderBy:'startTime', maxResults:50, timeZone:'Asia/Tokyo'
-  });
+  const s=new Date(now);s.setHours(0,0,0,0);
+  const e=new Date(s);e.setDate(e.getDate()+7);
+  const params=new URLSearchParams({timeMin:s.toISOString(),timeMax:e.toISOString(),singleEvents:true,orderBy:'startTime',maxResults:50,timeZone:'Asia/Tokyo'});
   const r=await gFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?'+params);
-  calEvents = r.items||[];
+  calEvents=r.items||[];
   document.getElementById('schedLoading').style.display='none';
   renderSchedule(calEvents);
 }
 
 function renderSchedule(events){
   const days={};
-  events.forEach(ev=>{
-    const d=new Date(ev.start.dateTime||ev.start.date);
-    const k=H.lk(d);
-    if(!days[k]) days[k]=[];
-    days[k].push(ev);
-  });
-
-  let html='', ci=0;
+  events.forEach(ev=>{const d=new Date(ev.start.dateTime||ev.start.date);const k=H.lk(d);if(!days[k])days[k]=[];days[k].push(ev);});
+  let html='',ci=0;
   for(let i=0;i<7;i++){
-    const day=new Date(now); day.setDate(day.getDate()+i);
-    const k=H.lk(day);
-    const devs=days[k]||[];
-    const isToday=i===0;
+    const day=new Date(now);day.setDate(day.getDate()+i);
+    const k=H.lk(day);const devs=days[k]||[];const isToday=i===0;
     const label=isToday?'今日 '+H.fd(day):i===1?'明日 '+H.fd(day):H.fd(day);
     const closed=!isToday&&i>1&&devs.length===0;
-
-    html+=`<div class="sched-day">
-      <div class="sched-day-header${isToday?' today':''}" onclick="toggleSched(this)">
-        <span class="chevron${closed?' closed':''}">▼</span> ${label}
-        ${devs.length?`<span class="cnt">${devs.length}</span>`:'<span style="font-size:10px;color:#ccc;">なし</span>'}
-      </div>
-      <div class="sched-events${closed?' closed':''}" style="max-height:${closed?'0':'3000'}px;">`;
-
-    if(!devs.length){
-      html+='<div class="empty">予定なし</div>';
-    } else {
+    html+=`<div class="sched-day"><div class="sched-day-header${isToday?' today':''}" onclick="toggleSched(this)"><span class="chevron${closed?' closed':''}">▼</span> ${label} ${devs.length?`<span class="cnt">${devs.length}</span>`:'<span style="font-size:11px;color:#cbd5e1;">なし</span>'}</div><div class="sched-events${closed?' closed':''}" style="max-height:${closed?'0':'3000'}px;">`;
+    if(!devs.length){html+='<div class="empty">予定なし</div>';}else{
       devs.forEach(ev=>{
-        const sd=new Date(ev.start.dateTime||ev.start.date);
-        const ed=new Date(ev.end.dateTime||ev.end.date);
-        const past=ed<now;
-        const col=COLORS[ci%COLORS.length]; ci++;
+        const sd=new Date(ev.start.dateTime||ev.start.date),ed=new Date(ev.end.dateTime||ev.end.date);
+        const past=ed<now,col=COLORS[ci%COLORS.length];ci++;
         const tm=H.ft(ev.start.dateTime||ev.start.date)+'-'+H.ft(ev.end.dateTime||ev.end.date);
-        const meet=ev.hangoutLink||ev.conferenceData;
-        const att=ev.attendees?ev.attendees.length:0;
-        const prep=H.np(ev), trip=H.nt(ev);
-
-        html+=`<div class="ev-item">
-          <div class="ev-bar" style="background:${past?'#ddd':col}"></div>
-          <div class="ev-time${past?' past':''}">${tm}</div>
-          <div class="ev-detail">
-            <div class="ev-name${past?' past':''}">${ev.summary||'(タイトルなし)'}</div>
-            ${ev.location?`<div class="ev-loc">📍 ${ev.location.split('\n')[0]}</div>`:''}
-            <div class="ev-tags">
-              ${meet?'<span class="etag meet">📹 Meet</span>':''}
-              ${att>1?`<span class="etag ppl">👥 ${att}人</span>`:''}
-              ${prep?'<span class="etag prep">📋 要準備</span>':''}
-              ${trip?'<span class="etag trip">🧳 出張</span>':''}
-            </div>
-          </div>
-        </div>`;
+        const meet=ev.hangoutLink||ev.conferenceData,att=ev.attendees?ev.attendees.length:0;
+        const prep=H.np(ev),trip=H.nt(ev);
+        html+=`<div class="ev-item"><div class="ev-bar" style="background:${past?'#e2e8f0':col}"></div><div class="ev-time${past?' past':''}">${tm}</div><div class="ev-detail"><div class="ev-name${past?' past':''}">${ev.summary||'(タイトルなし)'}</div>${ev.location?`<div class="ev-loc">${ev.location.split('\n')[0]}</div>`:''}<div class="ev-tags">${meet?'<span class="etag meet">Meet</span>':''}${att>1?`<span class="etag ppl">${att}人</span>`:''}${prep?'<span class="etag prep">要準備</span>':''}${trip?'<span class="etag trip">出張</span>':''}</div></div></div>`;
       });
     }
     html+='</div></div>';
   }
   document.getElementById('weekSched').innerHTML=html;
 }
-
-function toggleSched(el){
-  el.querySelector('.chevron').classList.toggle('closed');
-  const ev=el.nextElementSibling;
-  ev.classList.toggle('closed');
-  if(!ev.classList.contains('closed')) ev.style.maxHeight=ev.scrollHeight+'px';
-}
+function toggleSched(el){el.querySelector('.chevron').classList.toggle('closed');const ev=el.nextElementSibling;ev.classList.toggle('closed');if(!ev.classList.contains('closed'))ev.style.maxHeight=ev.scrollHeight+'px';}
 
 // ============================================================
-//  STARRED EMAILS (User's TODO)
+//  STARRED EMAILS
 // ============================================================
 async function loadStarred(){
-  const params=new URLSearchParams({q:'is:starred -in:trash', maxResults:10});
-  const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+params);
+  const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+new URLSearchParams({q:'is:starred -in:trash',maxResults:10}));
   const threads=r.threads||[];
   document.getElementById('starLoading').style.display='none';
   document.getElementById('starBadge').textContent=threads.length;
-
-  if(!threads.length){
-    document.getElementById('starredList').innerHTML='<div class="empty">スター付きメールはありません 🎉</div>';
-    return;
-  }
-
-  const details=await Promise.all(threads.map(t=>
-    gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')
-  ));
+  if(!threads.length){document.getElementById('starredList').innerHTML='<div class="empty">スター付きメールはありません</div>';return;}
+  const details=await Promise.all(threads.map(t=>gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')));
   starredThreads=details;
-
-  let html=''; let si=0;
-  details.forEach(t=>{
-    const msgs=t.messages||[];
-    const last=msgs[msgs.length-1];
-    const hd={}; (last.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
+  let html='';
+  details.forEach((t,i)=>{
+    const id='star_'+i;if(isDone(id))return;
+    const msgs=t.messages||[],last=msgs[msgs.length-1];
+    const hd={};(last.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
     const date=new Date(parseInt(last.internalDate));
-    const ts=H.sd(date,now)?H.ft(date.toISOString())||'':H.fd(date);
-    const id='star_'+si++;
-
-    html+=`<div class="email-item ${doneAttr(id)}">
-      <div class="email-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
-      <div class="email-star">⭐</div>
-      <div class="email-info">
-        <div class="email-from">${H.sn(hd.From||'')}</div>
-        <div class="email-subj">${hd.Subject||'(件名なし)'}</div>
-      </div>
-      <div class="email-time">${ts}</div>
-    </div>`;
+    const ts=H.sd(date,now)?H.ft(date.toISOString()):H.fd(date);
+    html+=`<div class="email-item" data-id="${id}"><div class="check-btn" onclick="markDone('${id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="email-icon"><svg viewBox="0 0 24 24" style="fill:#f59e0b;stroke:#f59e0b;stroke-width:1.5;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="email-info"><div class="email-from">${H.sn(hd.From||'')}</div><div class="email-subj">${hd.Subject||'(件名なし)'}</div></div><div class="email-time">${ts}</div></div>`;
   });
-  document.getElementById('starredList').innerHTML=html;
+  document.getElementById('starredList').innerHTML=html||'<div class="empty">すべて対応済み</div>';
+  updateBadges();
 }
 
 // ============================================================
-//  UNREAD EMAILS (for AI analysis)
+//  UNREAD EMAILS (with snippets for AI)
 // ============================================================
 async function loadUnread(){
-  const params=new URLSearchParams({q:'is:unread in:inbox newer_than:3d -is:starred', maxResults:15});
-  const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+params);
-  const threads=r.threads||[];
-  if(!threads.length) return;
-
-  const details=await Promise.all(threads.slice(0,10).map(t=>
-    gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')
-  ));
+  const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+new URLSearchParams({q:'is:unread in:inbox newer_than:3d -is:starred',maxResults:15}));
+  const threads=r.threads||[];if(!threads.length)return;
+  const details=await Promise.all(threads.slice(0,10).map(t=>gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')));
   unreadThreads=details;
+}
+
+// ============================================================
+//  BADGE UPDATE
+// ============================================================
+function updateBadges(){
+  const done=getDone();
+  // Count remaining tasks
+  const taskEls=document.querySelectorAll('#actionsList .action-item:not(.removing)');
+  const mailEls=document.querySelectorAll('#starredList .email-item:not(.removing)');
+  const tb=document.getElementById('taskTabBadge');
+  const mb=document.getElementById('mailTabBadge');
+  if(taskEls.length){tb.textContent=taskEls.length;tb.style.display='flex';}else{tb.style.display='none';}
+  if(mailEls.length){mb.textContent=mailEls.length;mb.style.display='flex';}else{mb.style.display='none';}
 }
 
 // ============================================================
 //  AI ANALYSIS (Gemini)
 // ============================================================
 async function runAIAnalysis(){
-  if(!GEMINI_API_KEY||GEMINI_API_KEY==='YOUR_GEMINI_API_KEY'){
-    runRuleBasedAnalysis();
-    return;
-  }
-
-  try {
-    // Timeout after 15 seconds
+  if(!GEMINI_API_KEY||GEMINI_API_KEY==='YOUR_GEMINI_API_KEY'){runRuleBasedAnalysis();return;}
+  try{
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),15000);
-    // Build context for Gemini
-    const evSummary = calEvents.map(ev=>{
+    const timeout=setTimeout(()=>controller.abort(),20000);
+
+    // Build user profile from localStorage
+    const profile=localStorage.getItem('ms_user_profile')||'';
+    const profileNote=profile?`\n## ユーザーのメモ・好み：\n${profile}`:'';
+
+    const evSummary=calEvents.map(ev=>{
       const d=new Date(ev.start.dateTime||ev.start.date);
       const dayLabel=H.sd(d,now)?'今日':H.db(now,d)===1?'明日':H.fd(d);
       const loc=ev.location?` [場所:${ev.location.split('\n')[0]}]`:'';
@@ -624,43 +647,38 @@ async function runAIAnalysis(){
       return `${dayLabel} ${H.ft(ev.start.dateTime||ev.start.date)}-${H.ft(ev.end.dateTime||ev.end.date)} ${ev.summary||''}${loc}${desc}`;
     }).join('\n');
 
-    const starSummary = starredThreads.map(t=>{
-      const m=t.messages[t.messages.length-1];
-      const hd={}; (m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
-      return `⭐ ${H.sn(hd.From||'')}: ${hd.Subject||''}`;
+    const starSummary=starredThreads.map(t=>{
+      const m=t.messages[t.messages.length-1];const hd={};(m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
+      return `⭐ ${H.sn(hd.From||'')}: ${hd.Subject||''} (${m.snippet||''})`;
     }).join('\n');
 
-    const unreadSummary = unreadThreads.map(t=>{
-      const m=t.messages[t.messages.length-1];
-      const hd={}; (m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
-      return `${H.sn(hd.From||'')}: ${hd.Subject||''} (snippet: ${m.snippet||''})`;
+    const unreadSummary=unreadThreads.map(t=>{
+      const m=t.messages[t.messages.length-1];const hd={};(m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
+      return `${H.sn(hd.From||'')}: ${hd.Subject||''} (${m.snippet||''})`;
     }).join('\n');
 
-    const prompt = `あなたは優秀な日本語の秘書です。以下の情報をもとに、2つのことをしてください。
+    const prompt=`あなたは優秀な日本語のAI秘書です。以下の情報をもとに3つのことをしてください。
 
 ## 1. ブリーフィング（briefing）
 現在時刻と予定・メールの状況をふまえて、3〜5文の自然な日本語で秘書としてのブリーフィングを書いてください。
 朝なら今日の動き、夜なら明日の準備、週末なら来週の概要を中心に。
-研修・講義があれば資料準備のリマインド、出張があれば移動・宿泊の確認、返信が必要そうなメールがあればその声かけを含めてください。
-丁寧すぎず、でも親しみのある秘書の口調でお願いします。
+研修・講義があれば資料準備のリマインド、出張があれば移動・宿泊の確認を。
+メールの中身も読んで、返信漏れや対応漏れがあれば「これ忘れてませんか？」と教えてあげてください。
+丁寧すぎず親しみのある秘書の口調で。
 
 ## 2. やることリスト（actions）
-具体的なアクションアイテムをJSON配列で出力してください。各項目は：
+具体的なアクションアイテムをJSON配列で出力。各項目：
 {"icon":"絵文字","title":"タイトル","desc":"詳細説明","urgency":"urgent|soon|info"}
-
-urgencyの基準：
-- urgent: 今日中にやるべき
-- soon: 明日〜3日以内
-- info: 知っておくとよい情報
+urgent=今日中、soon=明日〜3日以内、info=参考情報
 
 ## 3. 要対応メール検出（needAction）
-未読メール（スター無し）の中から、返信や対応が必要そうなものをJSON配列で出力してください。
-ニュースレター、広告、自動通知は除外してください。
-各項目：{"from":"送信者名","subject":"件名","reason":"対応が必要な理由"}
+未読メールの内容（snippet）を読んで、返信や対応が本当に必要なものだけをJSON配列で出力。
+ニュースレター、広告、自動通知、注文確認は除外。人からの問い合わせ、依頼、質問、期限のあるものを優先。
+各項目：{"from":"送信者名","subject":"件名","reason":"なぜ対応が必要か（具体的に）"}
 
 出力フォーマット（必ずこの形式で）：
 ---BRIEFING---
-（ブリーフィング本文）
+（本文）
 ---ACTIONS---
 [JSON配列]
 ---NEEDACTION---
@@ -676,62 +694,50 @@ ${evSummary||'なし'}
 ${starSummary||'なし'}
 
 ## 未読メール（スターなし・直近3日）：
-${unreadSummary||'なし'}`;
+${unreadSummary||'なし'}${profileNote}`;
 
-    const result = await askGemini(prompt, controller.signal);
+    const result=await askGemini(prompt,controller.signal);
     clearTimeout(timeout);
-    if(result && result.includes('---BRIEFING---')){
-      parseAndRender(result);
-    } else {
-      console.warn('Gemini returned unexpected format, falling back');
-      runRuleBasedAnalysis();
-    }
-  } catch(e) {
-    console.error('Gemini error:', e);
-    runRuleBasedAnalysis();
-  }
+    if(result&&result.includes('---BRIEFING---')){parseAndRender(result);}
+    else{runRuleBasedAnalysis();}
+  }catch(e){console.error('Gemini error:',e);runRuleBasedAnalysis();}
 }
 
 function parseAndRender(text){
-  // Parse briefing
-  const bMatch = text.match(/---BRIEFING---\s*([\s\S]*?)(?=---ACTIONS---|$)/);
-  const aMatch = text.match(/---ACTIONS---\s*([\s\S]*?)(?=---NEEDACTION---|$)/);
-  const nMatch = text.match(/---NEEDACTION---\s*([\s\S]*?)$/);
+  const bMatch=text.match(/---BRIEFING---\s*([\s\S]*?)(?=---ACTIONS---|$)/);
+  const aMatch=text.match(/---ACTIONS---\s*([\s\S]*?)(?=---NEEDACTION---|$)/);
+  const nMatch=text.match(/---NEEDACTION---\s*([\s\S]*?)$/);
 
-  // Briefing
   if(bMatch){
     document.getElementById('briefingLoading').style.display='none';
     const el=document.getElementById('briefingText');
-    el.style.display='block';
-    el.textContent=bMatch[1].trim();
+    el.style.display='block';el.textContent=bMatch[1].trim();
   }
 
-  // Actions
   if(aMatch){
     try{
       const json=aMatch[1].trim().replace(/```json\s*/g,'').replace(/```/g,'');
       const actions=JSON.parse(json);
       if(actions.length){
         document.getElementById('actionsCard').style.display='block';
-        document.getElementById('actionBadge').textContent=actions.length;
-        let html=''; let ai=0;
-        actions.forEach(a=>{
-          const id='act_'+ai++;
-          html+=`<div class="action-item ${doneAttr(id)}">
-            <div class="action-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
-            <div class="action-icon">${a.icon||'📌'}</div>
-            <div class="action-info">
-              <div class="action-title"><span class="action-tag ${a.urgency||'info'}">${a.urgency==='urgent'?'今日':a.urgency==='soon'?'近日中':'参考'}</span> ${a.title}</div>
-              <div class="action-desc">${a.desc}</div>
-            </div>
-          </div>`;
+        document.getElementById('homeActionsCard').style.display='block';
+        document.getElementById('tasksEmpty').style.display='none';
+        document.getElementById('homeActionBadge').textContent=actions.length;
+        let html='',homeHtml='';
+        actions.forEach((a,i)=>{
+          const id='act_'+i;
+          if(isDone(id))return;
+          const item=`<div class="action-item" data-id="${id}"><div class="check-btn" onclick="markDone('${id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="action-info"><div class="action-title"><span class="action-tag ${a.urgency||'info'}">${a.urgency==='urgent'?'今日':a.urgency==='soon'?'近日中':'参考'}</span> ${a.title}</div><div class="action-desc">${a.desc}</div></div></div>`;
+          html+=item;
+          if(i<3)homeHtml+=item; // Show top 3 on home
         });
         document.getElementById('actionsList').innerHTML=html;
+        document.getElementById('homeActionsList').innerHTML=homeHtml;
+        updateBadges();
       }
-    }catch(e){ console.error('Actions parse error',e); }
+    }catch(e){console.error('Actions parse error',e);}
   }
 
-  // Need action emails
   if(nMatch){
     try{
       const json=nMatch[1].trim().replace(/```json\s*/g,'').replace(/```/g,'');
@@ -739,97 +745,139 @@ function parseAndRender(text){
       if(emails.length){
         document.getElementById('aiEmailCard').style.display='block';
         document.getElementById('aiEmailBadge').textContent=emails.length;
-        let html=''; let ei=0;
-        emails.forEach(e=>{
-          const id='aieml_'+ei++;
-          html+=`<div class="email-item ${doneAttr(id)}">
-            <div class="email-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
-            <div class="email-ai">💡</div>
-            <div class="email-info">
-              <div class="email-from">${e.from}</div>
-              <div class="email-subj">${e.subject}</div>
-              <div class="email-reason">${e.reason}</div>
-            </div>
-          </div>`;
+        let html='';
+        emails.forEach((e,i)=>{
+          const id='aieml_'+i;if(isDone(id))return;
+          html+=`<div class="email-item" data-id="${id}"><div class="check-btn" onclick="markDone('${id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="email-icon"><svg viewBox="0 0 24 24" stroke="#2563eb" fill="none" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="email-info"><div class="email-from">${e.from}</div><div class="email-subj">${e.subject}</div><div class="email-reason">${e.reason}</div></div></div>`;
         });
         document.getElementById('aiEmailList').innerHTML=html;
       }
-    }catch(e){ console.error('NeedAction parse error',e); }
+    }catch(e){console.error('NeedAction parse error',e);}
   }
 }
 
 // ============================================================
-//  RULE-BASED FALLBACK (no Gemini key)
+//  RULE-BASED FALLBACK
 // ============================================================
 function runRuleBasedAnalysis(){
   document.getElementById('briefingLoading').style.display='none';
-  const el=document.getElementById('briefingText');
-  el.style.display='block';
-
-  // Build simple briefing
+  const el=document.getElementById('briefingText');el.style.display='block';
   const todayEvs=calEvents.filter(e=>H.sd(new Date(e.start.dateTime||e.start.date),now));
-  const tomorrowD=new Date(now); tomorrowD.setDate(tomorrowD.getDate()+1);
+  const tomorrowD=new Date(now);tomorrowD.setDate(tomorrowD.getDate()+1);
   const tomEvs=calEvents.filter(e=>H.sd(new Date(e.start.dateTime||e.start.date),tomorrowD));
   const prepEvs=calEvents.filter(e=>H.np(e)&&new Date(e.start.dateTime||e.start.date)>now);
   const tripEvs=calEvents.filter(e=>H.nt(e)&&new Date(e.start.dateTime||e.start.date)>now);
-
   let brief=[];
-  if(todayEvs.length) brief.push(`今日は${todayEvs.length}件の予定があります。`);
-  else brief.push('今日は予定がありません。');
-
-  if(tomEvs.length) brief.push(`明日は${tomEvs.length}件の予定があります。`);
-
-  prepEvs.forEach(ev=>{
-    const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));
-    if(d<=2) brief.push(`📋 ${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」の資料準備をお忘れなく。`);
-  });
-
-  tripEvs.forEach(ev=>{
-    const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));
-    if(d<=3) brief.push(`🧳 ${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」は出張です。移動・宿泊の準備は大丈夫ですか？`);
-  });
-
-  if(starredThreads.length) brief.push(`⭐ スター付きメールが${starredThreads.length}件あります。`);
-
+  if(todayEvs.length)brief.push(`今日は${todayEvs.length}件の予定があります。`);else brief.push('今日は予定がありません。');
+  if(tomEvs.length)brief.push(`明日は${tomEvs.length}件の予定があります。`);
+  prepEvs.forEach(ev=>{const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=2)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」の資料準備をお忘れなく。`);});
+  tripEvs.forEach(ev=>{const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=3)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」は出張です。移動・宿泊の準備は大丈夫ですか？`);});
+  if(starredThreads.length)brief.push(`スター付きメールが${starredThreads.length}件あります。`);
   el.textContent=brief.join('\n');
 
-  // Actions
   const actions=[];
-  prepEvs.forEach(ev=>{
-    const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));
-    if(d<=3) actions.push({
-      icon:'📋', title:ev.summary+'の資料準備',
-      desc:d<=1?'資料の最終確認・印刷を':d<=2?'資料の仕上げを':'資料のドラフト確認を',
-      urgency:d<=1?'urgent':'soon'
-    });
-  });
-  tripEvs.forEach(ev=>{
-    const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));
-    if(d<=3) actions.push({
-      icon:'🧳', title:ev.summary+'の出張準備',
-      desc:'移動手段・宿泊の確認',
-      urgency:d<=1?'urgent':'soon'
-    });
-  });
-
+  prepEvs.forEach(ev=>{const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=3)actions.push({icon:'',title:ev.summary+'の資料準備',desc:d<=1?'資料の最終確認を':d<=2?'資料の仕上げを':'ドラフト確認を',urgency:d<=1?'urgent':'soon'});});
+  tripEvs.forEach(ev=>{const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=3)actions.push({icon:'',title:ev.summary+'の出張準備',desc:'移動手段・宿泊の確認',urgency:d<=1?'urgent':'soon'});});
   if(actions.length){
     document.getElementById('actionsCard').style.display='block';
-    document.getElementById('actionBadge').textContent=actions.length;
-    let html=''; let ri=0;
-    actions.forEach(a=>{
-      const id='ract_'+ri++;
-      html+=`<div class="action-item ${doneAttr(id)}">
-        <div class="action-check ${doneAttr(id)}" data-done-id="${id}" onclick="toggleDone('${id}')">${doneCheck(id)}</div>
-        <div class="action-icon">${a.icon}</div>
-        <div class="action-info">
-          <div class="action-title"><span class="action-tag ${a.urgency}">${a.urgency==='urgent'?'今日':'近日中'}</span> ${a.title}</div>
-          <div class="action-desc">${a.desc}</div>
-        </div>
-      </div>`;
+    document.getElementById('homeActionsCard').style.display='block';
+    document.getElementById('tasksEmpty').style.display='none';
+    document.getElementById('homeActionBadge').textContent=actions.length;
+    let html='';
+    actions.forEach((a,i)=>{
+      const id='ract_'+i;if(isDone(id))return;
+      html+=`<div class="action-item" data-id="${id}"><div class="check-btn" onclick="markDone('${id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div><div class="action-info"><div class="action-title"><span class="action-tag ${a.urgency}">${a.urgency==='urgent'?'今日':'近日中'}</span> ${a.title}</div><div class="action-desc">${a.desc}</div></div></div>`;
     });
     document.getElementById('actionsList').innerHTML=html;
+    document.getElementById('homeActionsList').innerHTML=html;
+    updateBadges();
   }
 }
+
+// ============================================================
+//  CHAT
+// ============================================================
+let chatHistory=[];
+try{chatHistory=JSON.parse(localStorage.getItem('ms_chat_history'))||[];}catch(e){}
+
+function addChatMsg(role,text){
+  const div=document.createElement('div');
+  div.className='chat-msg '+role;
+  const avatar=role==='assistant'
+    ?'<div class="chat-avatar"><svg viewBox="0 0 24 24" width="16" height="16" stroke="#64748b" fill="none" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>'
+    :'<div class="chat-avatar" style="background:#2563eb;color:#fff;font-size:12px;">You</div>';
+  div.innerHTML=avatar+'<div class="chat-bubble">'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</div>';
+  document.getElementById('chatMessages').appendChild(div);
+  document.getElementById('chatMessages').scrollTop=99999;
+}
+
+// Restore chat history
+chatHistory.forEach(m=>addChatMsg(m.role,m.text));
+
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();if(!text)return;
+  input.value='';input.style.height='auto';
+
+  addChatMsg('user',text);
+  chatHistory.push({role:'user',text});
+
+  // Save user preferences if it looks like feedback
+  const feedbackKW=['覚えて','メモして','好み','普段','いつも','よく','preference'];
+  if(feedbackKW.some(k=>text.includes(k))){
+    let profile=localStorage.getItem('ms_user_profile')||'';
+    profile+='\n'+text;
+    localStorage.setItem('ms_user_profile',profile);
+  }
+
+  // Show typing indicator
+  const typing=document.createElement('div');
+  typing.className='chat-typing';typing.id='chatTyping';
+  typing.textContent='秘書が考え中...';
+  document.getElementById('chatMessages').appendChild(typing);
+  document.getElementById('chatMessages').scrollTop=99999;
+
+  try{
+    const profile=localStorage.getItem('ms_user_profile')||'';
+    const evBrief=calEvents.slice(0,10).map(ev=>{
+      const d=new Date(ev.start.dateTime||ev.start.date);
+      return `${H.sd(d,now)?'今日':H.db(now,d)===1?'明日':H.fd(d)} ${H.ft(ev.start.dateTime||ev.start.date)} ${ev.summary||''}`;
+    }).join('\n');
+
+    const recentChat=chatHistory.slice(-8).map(m=>`${m.role==='user'?'ユーザー':'秘書'}: ${m.text}`).join('\n');
+
+    const prompt=`あなたはユーザーの優秀なAI秘書です。以下のコンテキストをもとに、簡潔で親しみやすい日本語で答えてください。3〜5文程度。
+
+## 今週の予定（抜粋）：
+${evBrief||'なし'}
+
+## ユーザーのメモ・好み：
+${profile||'まだありません'}
+
+## 最近の会話：
+${recentChat}
+
+ユーザーの最新メッセージに答えてください。`;
+
+    const reply=await askGemini(prompt);
+    document.getElementById('chatTyping')?.remove();
+    addChatMsg('assistant',reply||'すみません、うまく回答できませんでした。');
+    chatHistory.push({role:'assistant',text:reply});
+    // Keep only last 30 messages
+    if(chatHistory.length>30)chatHistory=chatHistory.slice(-30);
+    localStorage.setItem('ms_chat_history',JSON.stringify(chatHistory));
+  }catch(e){
+    document.getElementById('chatTyping')?.remove();
+    addChatMsg('assistant','すみません、エラーが発生しました。もう一度試してください。');
+  }
+}
+
+// Chat input auto-resize
+document.addEventListener('DOMContentLoaded',()=>{
+  const ci=document.getElementById('chatInput');
+  ci.addEventListener('input',()=>{ci.style.height='auto';ci.style.height=Math.min(ci.scrollHeight,100)+'px';});
+  ci.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+});
 </script>
 <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
