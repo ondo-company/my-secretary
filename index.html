@@ -308,6 +308,7 @@ const H = {
   sd(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); },
   db(a,b){ return Math.round((new Date(b.getFullYear(),b.getMonth(),b.getDate())-new Date(a.getFullYear(),a.getMonth(),a.getDate()))/864e5); },
   sn(s){ const m=s.match(/^([^<]+)/); return m?m[1].trim():s.split('@')[0]; },
+  lk(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
   np(ev){ return PREP_KW.some(k=>(ev.summary||'').includes(k)); },
   nt(ev){ const t=(ev.summary||'')+(ev.description||'')+(ev.location||''); return TRIP_KW.some(k=>t.includes(k)); },
   nm(ev){ return MTG_KW.some(k=>(ev.summary||'').includes(k)); },
@@ -482,7 +483,7 @@ function renderSchedule(events){
   const days={};
   events.forEach(ev=>{
     const d=new Date(ev.start.dateTime||ev.start.date);
-    const k=d.toISOString().slice(0,10);
+    const k=H.lk(d);
     if(!days[k]) days[k]=[];
     days[k].push(ev);
   });
@@ -490,7 +491,7 @@ function renderSchedule(events){
   let html='', ci=0;
   for(let i=0;i<7;i++){
     const day=new Date(now); day.setDate(day.getDate()+i);
-    const k=day.toISOString().slice(0,10);
+    const k=H.lk(day);
     const devs=days[k]||[];
     const isToday=i===0;
     const label=isToday?'今日 '+H.fd(day):i===1?'明日 '+H.fd(day):H.fd(day);
