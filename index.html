@@ -493,14 +493,15 @@ function askGemini(prompt,signal,model){
   geminiQueue=p.catch(()=>{});
   return p;
 }
-async function _askGemini(prompt,signal,model='gemini-2.0-flash',retries=3){
+async function _askGemini(prompt,signal,model='gemini-2.0-flash-lite',retries=3,delay=10000){
   const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
   const res=await fetch(url,{method:'POST',signal,headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:2048}})
   });
   if(res.status===429&&retries>0){
-    await new Promise(r=>setTimeout(r,5000));
-    return _askGemini(prompt,signal,model,retries-1);
+    console.log(`429 rate limited, retrying in ${delay/1000}s (${retries} left)...`);
+    await new Promise(r=>setTimeout(r,delay));
+    return _askGemini(prompt,signal,model,retries-1,delay+5000);
   }
   if(!res.ok)throw new Error('Gemini HTTP '+res.status);
   const data=await res.json();
@@ -586,7 +587,7 @@ async function loadStarred(){
   document.getElementById('starLoading').style.display='none';
   document.getElementById('starBadge').textContent=threads.length;
   if(!threads.length){document.getElementById('starredList').innerHTML='<div class="empty">スター付きメールはありません</div>';return;}
-  const details=await Promise.all(threads.map(t=>gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')));
+  const details=await Promise.all(threads.map(t=>gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=full')));
   starredThreads=details;
   let html='';
   details.forEach((t,i)=>{
@@ -607,8 +608,23 @@ async function loadStarred(){
 async function loadUnread(){
   const r=await gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads?'+new URLSearchParams({q:'is:unread in:inbox newer_than:3d -is:starred',maxResults:15}));
   const threads=r.threads||[];if(!threads.length)return;
-  const details=await Promise.all(threads.slice(0,10).map(t=>gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date')));
+  // Use format=full to get body content for better AI analysis
+  const details=await Promise.all(threads.slice(0,10).map(t=>gFetch('https://gmail.googleapis.com/gmail/v1/users/me/threads/'+t.id+'?format=full')));
   unreadThreads=details;
+}
+
+function extractBody(msg){
+  // Extract plain text body from Gmail message payload
+  function findPart(part){
+    if(part.mimeType==='text/plain'&&part.body?.data)return part.body.data;
+    if(part.parts)for(const p of part.parts){const r=findPart(p);if(r)return r;}
+    return null;
+  }
+  try{
+    const b64=findPart(msg.payload);
+    if(b64)return atob(b64.replace(/-/g,'+').replace(/_/g,'/')).slice(0,600);
+  }catch(e){}
+  return msg.snippet||'';
 }
 
 // ============================================================
@@ -632,7 +648,7 @@ async function runAIAnalysis(){
   if(!GEMINI_API_KEY||GEMINI_API_KEY==='YOUR_GEMINI_API_KEY'){runRuleBasedAnalysis();return;}
   try{
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),20000);
+    const timeout=setTimeout(()=>controller.abort(),60000);
 
     // Build user profile & today's memo from localStorage
     const profile=localStorage.getItem('ms_user_profile')||'';
@@ -649,13 +665,15 @@ async function runAIAnalysis(){
 
     const starSummary=starredThreads.map(t=>{
       const m=t.messages[t.messages.length-1];const hd={};(m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
-      return `⭐ ${H.sn(hd.From||'')}: ${hd.Subject||''} (${m.snippet||''})`;
-    }).join('\n');
+      const body=extractBody(m);
+      return `⭐ ${H.sn(hd.From||'')}: ${hd.Subject||''}\n内容: ${body}`;
+    }).join('\n---\n');
 
     const unreadSummary=unreadThreads.map(t=>{
       const m=t.messages[t.messages.length-1];const hd={};(m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
-      return `${H.sn(hd.From||'')}: ${hd.Subject||''} (${m.snippet||''})`;
-    }).join('\n');
+      const body=extractBody(m);
+      return `${H.sn(hd.From||'')}: ${hd.Subject||''}\n内容: ${body}`;
+    }).join('\n---\n');
 
     // Build done items list
     const done=getDone();
@@ -708,7 +726,7 @@ ${starSummary||'なし'}
 ## 未読メール（スターなし・直近3日）：
 ${unreadSummary||'なし'}${profileNote}${doneNote}`;
 
-    const result=await askGemini(prompt,controller.signal);
+    const result=await askGemini(prompt,controller.signal,'gemini-2.0-flash-lite');
     clearTimeout(timeout);
     if(result&&result.includes('---BRIEFING---')){parseAndRender(result);}
     else{runRuleBasedAnalysis();}
@@ -788,6 +806,34 @@ function runRuleBasedAnalysis(){
   prepEvs.forEach((ev,i)=>{if(done['ract_'+i])return;const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=2)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」の資料準備をお忘れなく。`);});
   tripEvs.forEach((ev,i)=>{if(done['ract_'+(prepEvs.length+i)])return;const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=3)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」は出張です。移動・宿泊の準備は大丈夫ですか？`);});
   if(starredThreads.length)brief.push(`スター付きメールが${starredThreads.length}件あります。`);
+
+  // メール内容から返信・期限を検出
+  const REPLY_KW=['返信','ご返信','お返事','ご回答','ご確認','ご連絡','ご対応','お知らせください','教えてください','いただけますか','いただけると','いただきたく','お願いいたします','お願い申し上げ'];
+  const DEADLINE_KW=['期限','締切','〆切','締め切り','まで','までに','日まで','月末','急ぎ','至急','本日中','今週中','今月中','ASAP'];
+  const allMailThreads=[...starredThreads,...unreadThreads];
+  const mailAlerts=[];
+  allMailThreads.forEach(t=>{
+    const m=t.messages[t.messages.length-1];
+    const hd={};(m.payload.headers||[]).forEach(h=>hd[h.name]=h.value);
+    const body=extractBody(m);
+    const text=(hd.Subject||'')+' '+body;
+    const needsReply=REPLY_KW.some(k=>text.includes(k));
+    const hasDeadline=DEADLINE_KW.some(k=>text.includes(k));
+    if(needsReply||hasDeadline){
+      const from=H.sn(hd.From||'');
+      const subj=hd.Subject||'(件名なし)';
+      let note=[];
+      if(hasDeadline)note.push('期限あり');
+      if(needsReply)note.push('返信を求められています');
+      mailAlerts.push(`${from}さんから「${subj}」— ${note.join('・')}`);
+    }
+  });
+  if(mailAlerts.length){
+    brief.push('\n【要対応メール】');
+    mailAlerts.slice(0,5).forEach(a=>brief.push('・'+a));
+  }
+
+  brief.push('\n（※ AI分析が利用できなかったため簡易版です。「ブリーフィングを更新」で再試行できます）');
   el.textContent=brief.join('\n');
 
   const actions=[];
