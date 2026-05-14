@@ -184,38 +184,25 @@ body{
 .etag.prep{background:#fee2e2;color:#dc2626;}
 .etag.trip{background:#f3e8ff;color:#7c3aed;}
 
-/* ===== CHAT ===== */
-.chat-container{display:flex;flex-direction:column;height:calc(100dvh - var(--tab-h) - 20px);}
-.chat-messages{flex:1;overflow-y:auto;padding:8px 0;}
-.chat-msg{margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;}
-.chat-msg.user{flex-direction:row-reverse;}
-.chat-bubble{
-  max-width:80%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.7;
-  white-space:pre-wrap;
+/* ===== MEMO ===== */
+.memo-area{
+  width:100%;border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;font-size:15px;line-height:1.8;outline:none;resize:vertical;
+  font-family:inherit;min-height:140px;color:var(--text);background:#f8fafc;
 }
-.chat-msg.assistant .chat-bubble{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;}
-.chat-msg.user .chat-bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px;}
-.chat-avatar{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;background:#f1f5f9;
+.memo-area:focus{border-color:var(--blue);background:#fff;}
+.memo-short{min-height:90px;}
+.memo-save-btn{
+  width:100%;padding:14px;border:none;border-radius:12px;
+  background:var(--blue);color:#fff;font-size:15px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:8px;
 }
-.chat-input-bar{
-  display:flex;gap:8px;padding:10px 0;border-top:1px solid var(--border);
+.memo-save-btn:active{opacity:0.8;}
+.memo-saved{
+  display:none;text-align:center;padding:12px;font-size:14px;
+  color:var(--green);font-weight:600;margin-top:8px;
 }
-.chat-input{
-  flex:1;border:1px solid var(--border);border-radius:12px;
-  padding:10px 14px;font-size:15px;outline:none;resize:none;
-  font-family:inherit;min-height:42px;max-height:100px;
-}
-.chat-send{
-  width:42px;height:42px;border-radius:50%;border:none;
-  background:var(--blue);color:#fff;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-}
-.chat-send:disabled{background:#cbd5e1;cursor:default;}
-.chat-send svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;}
-.chat-typing{font-size:13px;color:var(--sub);padding:8px 0;font-style:italic;}
 
 /* ===== LOADING ===== */
 .loading{text-align:center;padding:24px;color:#94a3b8;font-size:14px;}
@@ -314,27 +301,29 @@ body{
     </div>
   </div>
 
-  <!-- TAB: CHAT -->
-  <div id="panelChat" class="tab-panel">
-    <div class="chat-container">
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-msg assistant">
-          <div class="chat-avatar">
-            <svg viewBox="0 0 24 24" width="16" height="16" stroke="#64748b" fill="none" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="chat-bubble">こんにちは！AI秘書です。
-予定やメールについて質問があればどうぞ。
-「この会議の準備は？」「来週の出張の持ち物は？」など、なんでも聞いてください。
-フィードバックも歓迎です！</div>
-        </div>
+  <!-- TAB: MEMO -->
+  <div id="panelMemo" class="tab-panel">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:6px;">秘書へのメモ</h2>
+    <p style="font-size:13px;color:var(--sub);margin-bottom:16px;">ここに書いた内容はブリーフィングに反映されます</p>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        あなたについて
       </div>
-      <div class="chat-input-bar">
-        <textarea class="chat-input" id="chatInput" rows="1" placeholder="秘書に話しかける..."></textarea>
-        <button class="chat-send" id="chatSend" onclick="sendChat()">
-          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
+      <textarea id="memoProfile" class="memo-area" placeholder="例：&#10;・出張は前日に荷物を準備する派&#10;・研修資料は3日前から準備したい&#10;・朝は弱いので重要な予定は午後に&#10;・イヌイさまの研修は毎月ある定例"></textarea>
     </div>
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        今日の伝達事項
+      </div>
+      <textarea id="memoToday" class="memo-area memo-short" placeholder="例：&#10;・午後の会議は15分遅れる予定&#10;・Aさんへの返信はもう済ませた"></textarea>
+    </div>
+    <button class="memo-save-btn" onclick="saveMemos()">
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      保存してブリーフィングに反映
+    </button>
+    <div id="memoSaved" class="memo-saved">保存しました！次回のブリーフィングに反映されます</div>
   </div>
 
   <!-- BOTTOM TAB BAR -->
@@ -357,9 +346,9 @@ body{
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       予定
     </button>
-    <button class="tab-btn" onclick="switchTab('Chat',this)">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      秘書
+    <button class="tab-btn" onclick="switchTab('Memo',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      メモ
     </button>
   </nav>
 </div>
@@ -423,10 +412,7 @@ function switchTab(name,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('panel'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='Chat'){
-    const msgs=document.getElementById('chatMessages');
-    msgs.scrollTop=msgs.scrollHeight;
-  }
+  if(name==='Memo')loadMemos();
 }
 
 // ============================================================
@@ -645,9 +631,10 @@ async function runAIAnalysis(){
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),20000);
 
-    // Build user profile from localStorage
+    // Build user profile & today's memo from localStorage
     const profile=localStorage.getItem('ms_user_profile')||'';
-    const profileNote=profile?`\n## ユーザーのメモ・好み：\n${profile}`:'';
+    const todayMemo=localStorage.getItem('ms_memo_'+H.lk(now))||'';
+    const profileNote=(profile?`\n## ユーザーのメモ・好み：\n${profile}`:'')+(todayMemo?`\n## 今日の伝達事項：\n${todayMemo}`:'');
 
     const evSummary=calEvents.map(ev=>{
       const d=new Date(ev.start.dateTime||ev.start.date);
@@ -805,91 +792,20 @@ function runRuleBasedAnalysis(){
 }
 
 // ============================================================
-//  CHAT
+//  MEMO (user profile & today's notes)
 // ============================================================
-let chatHistory=[];
-try{chatHistory=JSON.parse(localStorage.getItem('ms_chat_history'))||[];}catch(e){}
-
-function addChatMsg(role,text){
-  const div=document.createElement('div');
-  div.className='chat-msg '+role;
-  const avatar=role==='assistant'
-    ?'<div class="chat-avatar"><svg viewBox="0 0 24 24" width="16" height="16" stroke="#64748b" fill="none" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>'
-    :'<div class="chat-avatar" style="background:#2563eb;color:#fff;font-size:12px;">You</div>';
-  div.innerHTML=avatar+'<div class="chat-bubble">'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')+'</div>';
-  document.getElementById('chatMessages').appendChild(div);
-  document.getElementById('chatMessages').scrollTop=99999;
+function loadMemos(){
+  document.getElementById('memoProfile').value=localStorage.getItem('ms_user_profile')||'';
+  document.getElementById('memoToday').value=localStorage.getItem('ms_memo_'+H.lk(now))||'';
 }
-
-// Restore chat history
-chatHistory.forEach(m=>addChatMsg(m.role,m.text));
-
-async function sendChat(){
-  const input=document.getElementById('chatInput');
-  const text=input.value.trim();if(!text)return;
-  input.value='';input.style.height='auto';
-
-  addChatMsg('user',text);
-  chatHistory.push({role:'user',text});
-
-  // Save user preferences if it looks like feedback
-  const feedbackKW=['覚えて','メモして','好み','普段','いつも','よく','preference'];
-  if(feedbackKW.some(k=>text.includes(k))){
-    let profile=localStorage.getItem('ms_user_profile')||'';
-    profile+='\n'+text;
-    localStorage.setItem('ms_user_profile',profile);
-  }
-
-  // Show typing indicator
-  const typing=document.createElement('div');
-  typing.className='chat-typing';typing.id='chatTyping';
-  typing.textContent='秘書が考え中...';
-  document.getElementById('chatMessages').appendChild(typing);
-  document.getElementById('chatMessages').scrollTop=99999;
-
-  try{
-    const profile=localStorage.getItem('ms_user_profile')||'';
-    const evBrief=calEvents.slice(0,10).map(ev=>{
-      const d=new Date(ev.start.dateTime||ev.start.date);
-      return `${H.sd(d,now)?'今日':H.db(now,d)===1?'明日':H.fd(d)} ${H.ft(ev.start.dateTime||ev.start.date)} ${ev.summary||''}`;
-    }).join('\n');
-
-    const recentChat=chatHistory.slice(-8).map(m=>`${m.role==='user'?'ユーザー':'秘書'}: ${m.text}`).join('\n');
-
-    const prompt=`あなたはユーザーの優秀なAI秘書です。以下のコンテキストをもとに、簡潔で親しみやすい日本語で答えてください。3〜5文程度。
-
-## 今週の予定（抜粋）：
-${evBrief||'なし'}
-
-## ユーザーのメモ・好み：
-${profile||'まだありません'}
-
-## 最近の会話：
-${recentChat}
-
-ユーザーの最新メッセージに答えてください。`;
-
-    const reply=await askGemini(prompt,null,'gemini-2.0-flash-lite');
-    document.getElementById('chatTyping')?.remove();
-    addChatMsg('assistant',reply||'すみません、うまく回答できませんでした。');
-    chatHistory.push({role:'assistant',text:reply});
-    // Keep only last 30 messages
-    if(chatHistory.length>30)chatHistory=chatHistory.slice(-30);
-    localStorage.setItem('ms_chat_history',JSON.stringify(chatHistory));
-  }catch(e){
-    console.error('Chat error:',e);
-    document.getElementById('chatTyping')?.remove();
-    const msg=e.message.includes('429')?'少し混み合っています。10秒ほど待ってからもう一度送ってみてください。':'すみません、エラーが発生しました（'+e.message+'）。もう一度試してください。';
-    addChatMsg('assistant',msg);
-  }
+function saveMemos(){
+  localStorage.setItem('ms_user_profile',document.getElementById('memoProfile').value);
+  localStorage.setItem('ms_memo_'+H.lk(now),document.getElementById('memoToday').value);
+  const el=document.getElementById('memoSaved');
+  el.style.display='block';
+  setTimeout(()=>{el.style.display='none';},3000);
 }
-
-// Chat input auto-resize
-document.addEventListener('DOMContentLoaded',()=>{
-  const ci=document.getElementById('chatInput');
-  ci.addEventListener('input',()=>{ci.style.height='auto';ci.style.height=Math.min(ci.scrollHeight,100)+'px';});
-  ci.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
-});
+document.addEventListener('DOMContentLoaded',loadMemos);
 </script>
 <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
