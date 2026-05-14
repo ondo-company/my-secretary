@@ -252,6 +252,9 @@ body{
       </div>
       <div class="loading" id="briefingLoading"><span class="spinner"></span>予定とメールを分析中...</div>
       <div class="briefing" id="briefingText" style="display:none;"></div>
+      <button id="refreshBtn" style="display:none;margin-top:10px;width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:13px;color:var(--blue);font-weight:600;cursor:pointer;" onclick="refreshBriefing()">
+        ブリーフィングを更新
+      </button>
     </div>
     <div class="card" id="homeActionsCard" style="display:none;">
       <div class="card-title">
@@ -654,6 +657,11 @@ async function runAIAnalysis(){
       return `${H.sn(hd.From||'')}: ${hd.Subject||''} (${m.snippet||''})`;
     }).join('\n');
 
+    // Build done items list
+    const done=getDone();
+    const doneList=Object.keys(done).filter(k=>done[k]).join(', ');
+    const doneNote=doneList?`\n## 対応済み（ブリーフィングで触れないで）：\n${doneList}`:'';
+
     const prompt=`あなたは優秀な日本語のAI秘書です。以下の情報をもとに3つのことをしてください。
 
 ## 1. ブリーフィング（briefing）
@@ -661,6 +669,7 @@ async function runAIAnalysis(){
 朝なら今日の動き、夜なら明日の準備、週末なら来週の概要を中心に。
 研修・講義があれば資料準備のリマインド、出張があれば移動・宿泊の確認を。
 メールの中身も読んで、返信漏れや対応漏れがあれば「これ忘れてませんか？」と教えてあげてください。
+「対応済み」に記載されたものは既にユーザーが対応したので、ブリーフィングやアクションに含めないでください。
 丁寧すぎず親しみのある秘書の口調で。
 
 ## 2. やることリスト（actions）
@@ -691,7 +700,7 @@ ${evSummary||'なし'}
 ${starSummary||'なし'}
 
 ## 未読メール（スターなし・直近3日）：
-${unreadSummary||'なし'}${profileNote}`;
+${unreadSummary||'なし'}${profileNote}${doneNote}`;
 
     const result=await askGemini(prompt,controller.signal);
     clearTimeout(timeout);
@@ -709,6 +718,7 @@ function parseAndRender(text){
     document.getElementById('briefingLoading').style.display='none';
     const el=document.getElementById('briefingText');
     el.style.display='block';el.textContent=bMatch[1].trim();
+    document.getElementById('refreshBtn').style.display='block';
   }
 
   if(aMatch){
@@ -759,6 +769,8 @@ function parseAndRender(text){
 function runRuleBasedAnalysis(){
   document.getElementById('briefingLoading').style.display='none';
   const el=document.getElementById('briefingText');el.style.display='block';
+  document.getElementById('refreshBtn').style.display='block';
+  const done=getDone();
   const todayEvs=calEvents.filter(e=>H.sd(new Date(e.start.dateTime||e.start.date),now));
   const tomorrowD=new Date(now);tomorrowD.setDate(tomorrowD.getDate()+1);
   const tomEvs=calEvents.filter(e=>H.sd(new Date(e.start.dateTime||e.start.date),tomorrowD));
@@ -767,8 +779,8 @@ function runRuleBasedAnalysis(){
   let brief=[];
   if(todayEvs.length)brief.push(`今日は${todayEvs.length}件の予定があります。`);else brief.push('今日は予定がありません。');
   if(tomEvs.length)brief.push(`明日は${tomEvs.length}件の予定があります。`);
-  prepEvs.forEach(ev=>{const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=2)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」の資料準備をお忘れなく。`);});
-  tripEvs.forEach(ev=>{const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=3)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」は出張です。移動・宿泊の準備は大丈夫ですか？`);});
+  prepEvs.forEach((ev,i)=>{if(done['ract_'+i])return;const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=2)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」の資料準備をお忘れなく。`);});
+  tripEvs.forEach((ev,i)=>{if(done['ract_'+(prepEvs.length+i)])return;const d=H.db(now,new Date(ev.start.dateTime||ev.start.date));if(d<=3)brief.push(`${d===0?'本日':d===1?'明日':d+'日後'}の「${ev.summary}」は出張です。移動・宿泊の準備は大丈夫ですか？`);});
   if(starredThreads.length)brief.push(`スター付きメールが${starredThreads.length}件あります。`);
   el.textContent=brief.join('\n');
 
@@ -806,6 +818,17 @@ function saveMemos(){
   setTimeout(()=>{el.style.display='none';},3000);
 }
 document.addEventListener('DOMContentLoaded',loadMemos);
+
+// ============================================================
+//  REFRESH BRIEFING
+// ============================================================
+function refreshBriefing(){
+  const btn=document.getElementById('refreshBtn');
+  btn.textContent='更新中...';btn.disabled=true;
+  document.getElementById('briefingText').style.display='none';
+  document.getElementById('briefingLoading').style.display='block';
+  runAIAnalysis().finally(()=>{btn.textContent='ブリーフィングを更新';btn.disabled=false;});
+}
 </script>
 <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </body>
