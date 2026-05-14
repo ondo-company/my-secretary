@@ -498,14 +498,20 @@ async function gFetch(url){
 // ============================================================
 //  GEMINI API
 // ============================================================
-async function askGemini(prompt,signal,retries=2){
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+let geminiQueue=Promise.resolve();
+function askGemini(prompt,signal,model){
+  const p=geminiQueue.then(()=>_askGemini(prompt,signal,model));
+  geminiQueue=p.catch(()=>{});
+  return p;
+}
+async function _askGemini(prompt,signal,model='gemini-2.0-flash',retries=3){
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
   const res=await fetch(url,{method:'POST',signal,headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:2048}})
   });
   if(res.status===429&&retries>0){
-    await new Promise(r=>setTimeout(r,3000));
-    return askGemini(prompt,signal,retries-1);
+    await new Promise(r=>setTimeout(r,5000));
+    return _askGemini(prompt,signal,model,retries-1);
   }
   if(!res.ok)throw new Error('Gemini HTTP '+res.status);
   const data=await res.json();
@@ -863,7 +869,7 @@ ${recentChat}
 
 ユーザーの最新メッセージに答えてください。`;
 
-    const reply=await askGemini(prompt);
+    const reply=await askGemini(prompt,null,'gemini-2.0-flash-lite');
     document.getElementById('chatTyping')?.remove();
     addChatMsg('assistant',reply||'すみません、うまく回答できませんでした。');
     chatHistory.push({role:'assistant',text:reply});
