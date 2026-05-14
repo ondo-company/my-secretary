@@ -324,9 +324,9 @@ body{
     </div>
     <button class="memo-save-btn" onclick="saveMemos()">
       <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-      保存してブリーフィングに反映
+      保存してブリーフィングを更新
     </button>
-    <div id="memoSaved" class="memo-saved">保存しました！次回のブリーフィングに反映されます</div>
+    <div id="memoSaved" class="memo-saved">保存しました！ブリーフィングを更新中...</div>
   </div>
 
   <!-- BOTTOM TAB BAR -->
@@ -667,8 +667,14 @@ async function runAIAnalysis(){
 ## 1. ブリーフィング（briefing）
 現在時刻と予定・メールの状況をふまえて、3〜5文の自然な日本語で秘書としてのブリーフィングを書いてください。
 朝なら今日の動き、夜なら明日の準備、週末なら来週の概要を中心に。
-研修・講義があれば資料準備のリマインド、出張があれば移動・宿泊の確認を。
-メールの中身も読んで、返信漏れや対応漏れがあれば「これ忘れてませんか？」と教えてあげてください。
+
+以下を重点的にチェックしてブリーフィングに含めてください：
+- 研修・講義があれば資料準備のリマインド
+- 出張があれば移動・宿泊の確認
+- メールの中身（snippet）をよく読んで、返信を求められているもの、特に締め切り・期限が設定されているものがあれば「○○さんから△△の件で返信を求められています（期限：□□）」のように具体的に教えてください
+- 返信漏れや対応漏れがあれば「これ忘れてませんか？」と教えてあげてください
+- 「ユーザーのメモ・好み」や「今日の伝達事項」に書かれた内容も必ず考慮してください
+
 「対応済み」に記載されたものは既にユーザーが対応したので、ブリーフィングやアクションに含めないでください。
 丁寧すぎず親しみのある秘書の口調で。
 
@@ -816,6 +822,9 @@ function saveMemos(){
   const el=document.getElementById('memoSaved');
   el.style.display='block';
   setTimeout(()=>{el.style.display='none';},3000);
+  // Auto-refresh briefing
+  switchTab('Home',document.querySelector('.tab-btn'));
+  refreshBriefing();
 }
 document.addEventListener('DOMContentLoaded',loadMemos);
 
