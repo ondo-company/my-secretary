@@ -867,8 +867,9 @@ ${recentChat}
     if(chatHistory.length>30)chatHistory=chatHistory.slice(-30);
     localStorage.setItem('ms_chat_history',JSON.stringify(chatHistory));
   }catch(e){
+    console.error('Chat error:',e);
     document.getElementById('chatTyping')?.remove();
-    addChatMsg('assistant','すみません、エラーが発生しました。もう一度試してください。');
+    addChatMsg('assistant','エラー: '+e.message);
   }
 }
 
