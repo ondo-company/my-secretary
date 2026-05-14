@@ -498,11 +498,15 @@ async function gFetch(url){
 // ============================================================
 //  GEMINI API
 // ============================================================
-async function askGemini(prompt,signal){
+async function askGemini(prompt,signal,retries=2){
   const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
   const res=await fetch(url,{method:'POST',signal,headers:{'Content-Type':'application/json'},
     body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.3,maxOutputTokens:2048}})
   });
+  if(res.status===429&&retries>0){
+    await new Promise(r=>setTimeout(r,3000));
+    return askGemini(prompt,signal,retries-1);
+  }
   if(!res.ok)throw new Error('Gemini HTTP '+res.status);
   const data=await res.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text||'';
@@ -869,7 +873,8 @@ ${recentChat}
   }catch(e){
     console.error('Chat error:',e);
     document.getElementById('chatTyping')?.remove();
-    addChatMsg('assistant','エラー: '+e.message);
+    const msg=e.message.includes('429')?'少し混み合っています。10秒ほど待ってからもう一度送ってみてください。':'すみません、エラーが発生しました（'+e.message+'）。もう一度試してください。';
+    addChatMsg('assistant',msg);
   }
 }
 
